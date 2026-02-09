@@ -1,0 +1,17 @@
+---
+interface Props {
+  name: string;
+  level: number;
+}
+
+const { name, level } = Astro.props;
+const filled = Math.round(level / 10);
+const empty = 10 - filled;
+const bar = '█'.repeat(filled) + '░'.repeat(empty);
+---
+
+<div class="flex items-center gap-4 font-mono text-sm">
+  <span class="w-32 text-terminal-cyan truncate">{name}</span>
+  <span class="text-terminal-green">[{bar}]</span>
+  <span class="text-terminal-muted w-12">{level}%</span>
+</div>

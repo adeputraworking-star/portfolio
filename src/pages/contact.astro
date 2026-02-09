@@ -1,0 +1,209 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Terminal from '../components/Terminal.astro';
+import profile from '../data/profile.json';
+---
+
+<BaseLayout title="Contact" description="Get in touch with Ade Putra Susila">
+  <section class="py-8">
+    <!-- Command Header -->
+    <div class="mb-8">
+      <p class="text-terminal-cyan mb-2">visitor@ade-portfolio:~$</p>
+      <h1 class="text-2xl md:text-3xl text-terminal-green glow-sm">./contact.sh</h1>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Contact Info -->
+      <Terminal title="contact_info.env">
+        <p class="text-terminal-muted mb-4"># Contact Information</p>
+
+        <div class="space-y-3">
+          <p>
+            <span class="text-terminal-cyan">EMAIL</span>=
+            <a href={`mailto:${profile.email}`} class="text-terminal-green hover:glow-sm">
+              "{profile.email}"
+            </a>
+          </p>
+
+          <p>
+            <span class="text-terminal-cyan">PHONE</span>=
+            <a href={`tel:${profile.phone}`} class="text-terminal-green hover:glow-sm">
+              "{profile.phone}"
+            </a>
+          </p>
+
+          <p>
+            <span class="text-terminal-cyan">WHATSAPP</span>=
+            <a href={profile.social.whatsapp} target="_blank" rel="noopener noreferrer" class="text-terminal-green hover:glow-sm">
+              "{profile.whatsapp}"
+            </a>
+          </p>
+
+          <p>
+            <span class="text-terminal-cyan">LINKEDIN</span>=
+            <a href={profile.social.linkedin} target="_blank" rel="noopener noreferrer" class="text-terminal-green hover:glow-sm break-all">
+              "{profile.linkedin}"
+            </a>
+          </p>
+
+          <p>
+            <span class="text-terminal-cyan">GITHUB</span>=
+            <a href={profile.social.github} target="_blank" rel="noopener noreferrer" class="text-terminal-green hover:glow-sm">
+              "{profile.github}"
+            </a>
+          </p>
+
+          <p>
+            <span class="text-terminal-cyan">LOCATION</span>=
+            <span class="text-terminal-muted">"{profile.location}"</span>
+          </p>
+        </div>
+      </Terminal>
+
+      <!-- Contact Form -->
+      <Terminal title="send_message.sh">
+        <form id="contact-form" class="space-y-4">
+          <div>
+            <label class="text-terminal-muted block mb-1"># Your Name</label>
+            <div class="flex items-center gap-2">
+              <span class="text-terminal-cyan">name=</span>
+              <input
+                type="text"
+                name="name"
+                required
+                class="flex-1 bg-bg-tertiary border border-terminal-border rounded px-3 py-2 text-terminal-green focus:border-terminal-green focus:outline-none"
+                placeholder='"John Doe"'
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-terminal-muted block mb-1"># Your Email</label>
+            <div class="flex items-center gap-2">
+              <span class="text-terminal-cyan">email=</span>
+              <input
+                type="email"
+                name="email"
+                required
+                class="flex-1 bg-bg-tertiary border border-terminal-border rounded px-3 py-2 text-terminal-green focus:border-terminal-green focus:outline-none"
+                placeholder='"john@example.com"'
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-terminal-muted block mb-1"># Subject</label>
+            <div class="flex items-center gap-2">
+              <span class="text-terminal-cyan">subject=</span>
+              <input
+                type="text"
+                name="subject"
+                required
+                class="flex-1 bg-bg-tertiary border border-terminal-border rounded px-3 py-2 text-terminal-green focus:border-terminal-green focus:outline-none"
+                placeholder='"Job Opportunity"'
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-terminal-muted block mb-1"># Message</label>
+            <div class="flex items-start gap-2">
+              <span class="text-terminal-cyan pt-2">message=</span>
+              <textarea
+                name="message"
+                required
+                rows="4"
+                class="flex-1 bg-bg-tertiary border border-terminal-border rounded px-3 py-2 text-terminal-green focus:border-terminal-green focus:outline-none resize-none"
+                placeholder='"Your message here..."'
+              ></textarea>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-terminal-green text-bg-primary font-bold py-3 rounded hover:bg-terminal-green-dim transition-all"
+          >
+            $ ./send_message.sh --execute
+          </button>
+        </form>
+
+        <div id="form-result" class="mt-4 hidden">
+          <p class="text-terminal-green">
+            <span class="text-terminal-muted">[SUCCESS]</span> Message sent successfully!
+          </p>
+        </div>
+      </Terminal>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+      <a
+        href={`mailto:${profile.email}`}
+        class="terminal-window hover:border-terminal-green transition-all group"
+      >
+        <div class="terminal-body text-center py-4">
+          <p class="text-terminal-cyan group-hover:glow-sm">mail</p>
+          <p class="text-terminal-green text-sm">Email</p>
+        </div>
+      </a>
+      <a
+        href={profile.social.whatsapp}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="terminal-window hover:border-terminal-green transition-all group"
+      >
+        <div class="terminal-body text-center py-4">
+          <p class="text-terminal-cyan group-hover:glow-sm">wa</p>
+          <p class="text-terminal-green text-sm">WhatsApp</p>
+        </div>
+      </a>
+      <a
+        href={profile.social.linkedin}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="terminal-window hover:border-terminal-green transition-all group"
+      >
+        <div class="terminal-body text-center py-4">
+          <p class="text-terminal-cyan group-hover:glow-sm">in</p>
+          <p class="text-terminal-green text-sm">LinkedIn</p>
+        </div>
+      </a>
+      <a
+        href={profile.social.github}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="terminal-window hover:border-terminal-green transition-all group"
+      >
+        <div class="terminal-body text-center py-4">
+          <p class="text-terminal-cyan group-hover:glow-sm">gh</p>
+          <p class="text-terminal-green text-sm">GitHub</p>
+        </div>
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  const result = document.getElementById('form-result');
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // For now, just show success message
+    // In production, integrate with a form service like Formspree, Netlify Forms, etc.
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    console.log('Form submitted:', data);
+
+    // Show success
+    result?.classList.remove('hidden');
+    form.reset();
+
+    // Hide after 5 seconds
+    setTimeout(() => {
+      result?.classList.add('hidden');
+    }, 5000);
+  });
+</script>

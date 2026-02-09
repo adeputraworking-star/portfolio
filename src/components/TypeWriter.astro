@@ -1,0 +1,47 @@
+---
+interface Props {
+  text: string;
+  speed?: number;
+  delay?: number;
+  class?: string;
+  cursor?: boolean;
+}
+
+const { text, speed = 50, delay = 0, class: className = '', cursor = true } = Astro.props;
+const id = `typewriter-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<span id={id} class={className} data-text={text} data-speed={speed} data-delay={delay}>
+  {cursor && <span class="cursor-blink text-terminal-green">_</span>}
+</span>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const elements = document.querySelectorAll('[id^="typewriter-"]');
+
+    elements.forEach((el) => {
+      const text = el.getAttribute('data-text') || '';
+      const speed = parseInt(el.getAttribute('data-speed') || '50');
+      const delay = parseInt(el.getAttribute('data-delay') || '0');
+
+      let index = 0;
+      el.textContent = '';
+
+      setTimeout(() => {
+        const interval = setInterval(() => {
+          if (index < text.length) {
+            el.textContent = text.substring(0, index + 1);
+            index++;
+          } else {
+            clearInterval(interval);
+            // Add blinking cursor at the end
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor-blink text-terminal-green';
+            cursor.textContent = '_';
+            el.appendChild(cursor);
+          }
+        }, speed);
+      }, delay);
+    });
+  });
+</script>

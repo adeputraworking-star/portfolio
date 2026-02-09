@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Terminal from '../components/Terminal.astro';
+
+const projects = [
+  {
+    name: 'simrs-hris-system',
+    description: 'Healthcare information system including SIMRS, HRIS, and Unit Cost modules with real-time chat and e-signature integration',
+    tech: ['Node.js', 'NestJS', 'MongoDB', 'PostgreSQL', 'Socket.IO', 'Prisma'],
+    type: 'Healthcare',
+    highlight: 'Digital e-Signature (TTE) integration'
+  },
+  {
+    name: 'trading-system',
+    description: 'Real-time trading system with live stock price dashboard processing millions of data points',
+    tech: ['React JS', 'Node.js', 'WebSocket', 'Elasticsearch', 'Docker'],
+    type: 'Fintech',
+    highlight: 'Real-time dashboard with WebSocket'
+  },
+  {
+    name: 'regulatory-reporting',
+    description: 'Banking regulatory reporting system for ANTASENA, SLIK, SCV, and APOLO modules',
+    tech: ['React JS', '.NET Core', 'SQL Server', 'Microservices'],
+    type: 'Banking',
+    highlight: 'Excel import: 1hr → 2min'
+  },
+  {
+    name: 'video-conference',
+    description: 'Web-based video conference and management system for educational purposes',
+    tech: ['React JS', 'Node.js', 'BigBlueButton'],
+    type: 'Education',
+    highlight: 'File management system'
+  },
+  {
+    name: 'game-topup-monitor',
+    description: 'Dashboard for monitoring and top-up services integrated with third-party game providers',
+    tech: ['React JS', 'Node.js', 'PostgreSQL', 'Sequelize'],
+    type: 'Gaming',
+    highlight: 'Third-party integration'
+  }
+];
+---
+
+<BaseLayout title="Projects" description="Portfolio of projects built by Ade Putra Susila">
+  <section class="py-8">
+    <!-- Command Header -->
+    <div class="mb-8">
+      <p class="text-terminal-cyan mb-2">visitor@ade-portfolio:~$</p>
+      <h1 class="text-2xl md:text-3xl text-terminal-green glow-sm">ls -la projects/</h1>
+    </div>
+
+    <!-- Directory Listing -->
+    <Terminal title="projects/" class="mb-8">
+      <p class="text-terminal-muted mb-4">total {projects.length} projects</p>
+      <div class="space-y-1 text-sm overflow-x-auto">
+        <p class="text-terminal-muted">drwxr-xr-x  ade  staff  ..</p>
+        {projects.map((project) => (
+          <p>
+            <span class="text-terminal-cyan">-rw-r--r--</span>
+            <span class="text-terminal-muted"> ade  staff </span>
+            <span class="text-terminal-green">{project.name}/</span>
+          </p>
+        ))}
+      </div>
+    </Terminal>
+
+    <!-- Project Cards -->
+    <div class="grid md:grid-cols-2 gap-6">
+      {projects.map((project) => (
+        <div class="terminal-window hover:border-terminal-green transition-all">
+          <div class="terminal-header">
+            <span class="terminal-dot terminal-dot-red"></span>
+            <span class="terminal-dot terminal-dot-yellow"></span>
+            <span class="terminal-dot terminal-dot-green"></span>
+            <span class="terminal-title">cat {project.name}/README.md</span>
+          </div>
+          <div class="terminal-body">
+            <p class="text-terminal-orange text-lg mb-2"># {project.name}</p>
+            <p class="text-terminal-muted mb-1">## Type: {project.type}</p>
+            <p class="text-terminal-green-dim mb-4">{project.description}</p>
+
+            <p class="text-terminal-muted mb-2">## Tech Stack</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              {project.tech.map((t) => (
+                <span class="px-2 py-1 bg-bg-tertiary text-terminal-cyan text-xs rounded">
+                  {t}
+                </span>
+              ))}
+            </div>
+
+            <p class="text-terminal-muted mb-1">## Highlight</p>
+            <p class="text-terminal-yellow">{project.highlight}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Note -->
+    <Terminal title="note.txt" class="mt-8">
+      <p class="text-terminal-muted">
+        # Note: These are professional projects built during employment.
+      </p>
+      <p class="text-terminal-muted">
+        # Source code is proprietary and cannot be shared publicly.
+      </p>
+      <p class="text-terminal-green mt-2">
+        # For personal/open-source projects, check my GitHub profile.
+      </p>
+    </Terminal>
+  </section>
+</BaseLayout>

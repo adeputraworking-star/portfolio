@@ -1,0 +1,54 @@
+---
+import profile from '../data/profile.json';
+---
+
+<footer class="border-t border-terminal-border mt-16 py-8">
+  <div class="container mx-auto px-4 max-w-5xl">
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <span class="terminal-dot terminal-dot-red"></span>
+        <span class="terminal-dot terminal-dot-yellow"></span>
+        <span class="terminal-dot terminal-dot-green"></span>
+        <span class="terminal-title">footer.sh</span>
+      </div>
+      <div class="terminal-body text-sm">
+        <p class="text-terminal-muted mb-2"># Social Links</p>
+        <p class="mb-1">
+          <span class="text-terminal-cyan">export</span>
+          <span class="text-terminal-orange">LINKEDIN</span>=
+          <a href={profile.social.linkedin} target="_blank" rel="noopener noreferrer" class="text-terminal-green hover:glow-sm">
+            "{profile.social.linkedin}"
+          </a>
+        </p>
+        <p class="mb-1">
+          <span class="text-terminal-cyan">export</span>
+          <span class="text-terminal-orange">GITHUB</span>=
+          <a href={profile.social.github} target="_blank" rel="noopener noreferrer" class="text-terminal-green hover:glow-sm">
+            "{profile.social.github}"
+          </a>
+        </p>
+        <p class="mb-1">
+          <span class="text-terminal-cyan">export</span>
+          <span class="text-terminal-orange">EMAIL</span>=
+          <a href={profile.social.email} class="text-terminal-green hover:glow-sm">
+            "{profile.email}"
+          </a>
+        </p>
+        <p class="mb-4">
+          <span class="text-terminal-cyan">export</span>
+          <span class="text-terminal-orange">WHATSAPP</span>=
+          <a href={profile.social.whatsapp} target="_blank" rel="noopener noreferrer" class="text-terminal-green hover:glow-sm">
+            "{profile.whatsapp}"
+          </a>
+        </p>
+
+        <p class="text-terminal-muted">
+          # Built with Astro & Tailwind CSS
+        </p>
+        <p class="text-terminal-muted">
+          # &copy; {new Date().getFullYear()} {profile.name}. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>

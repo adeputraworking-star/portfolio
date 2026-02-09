@@ -1,0 +1,96 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Terminal from '../../components/Terminal.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article class="py-8">
+    <!-- Command Header -->
+    <div class="mb-8">
+      <p class="text-terminal-cyan mb-2">visitor@ade-portfolio:~$</p>
+      <h1 class="text-2xl md:text-3xl text-terminal-green glow-sm">cat blog/{post.slug}.md</h1>
+    </div>
+
+    <!-- Post Meta -->
+    <Terminal title={`${post.slug}.md`} class="mb-8">
+      <div class="space-y-2">
+        <p>
+          <span class="text-terminal-cyan">title</span>="<span class="text-terminal-orange">{post.data.title}</span>"
+        </p>
+        <p>
+          <span class="text-terminal-cyan">date</span>="<span class="text-terminal-muted">{new Date(post.data.date).toISOString().split('T')[0]}</span>"
+        </p>
+        <p>
+          <span class="text-terminal-cyan">author</span>="<span class="text-terminal-green">Ade Putra Susila</span>"
+        </p>
+        {post.data.tags && (
+          <p>
+            <span class="text-terminal-cyan">tags</span>=(<span class="text-terminal-yellow">{post.data.tags.map((t: string) => `"${t}"`).join(' ')}</span>)
+          </p>
+        )}
+      </div>
+    </Terminal>
+
+    <!-- Post Content -->
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <span class="terminal-dot terminal-dot-red"></span>
+        <span class="terminal-dot terminal-dot-yellow"></span>
+        <span class="terminal-dot terminal-dot-green"></span>
+        <span class="terminal-title">content</span>
+      </div>
+      <div class="terminal-body prose prose-invert prose-green max-w-none">
+        <Content />
+      </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-8">
+      <a href="/blog" class="text-terminal-cyan hover:text-terminal-green hover:glow-sm transition-all">
+        &lt;- cd ../blog
+      </a>
+    </div>
+  </article>
+</BaseLayout>
+
+<style is:global>
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    color: var(--color-terminal-orange);
+  }
+  .prose p {
+    color: var(--color-terminal-green-dim);
+  }
+  .prose a {
+    color: var(--color-terminal-cyan);
+  }
+  .prose code {
+    color: var(--color-terminal-yellow);
+    background-color: var(--color-bg-tertiary);
+  }
+  .prose pre {
+    background-color: var(--color-bg-tertiary);
+    border: 1px solid var(--color-terminal-border);
+  }
+  .prose strong {
+    color: var(--color-terminal-green);
+  }
+  .prose ul, .prose ol {
+    color: var(--color-terminal-green-dim);
+  }
+  .prose blockquote {
+    border-left-color: var(--color-terminal-green);
+    color: var(--color-terminal-muted);
+  }
+</style>

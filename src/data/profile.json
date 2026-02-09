@@ -1,0 +1,63 @@
+{
+  "name": "Ade Putra Susila",
+  "shortName": "Ade",
+  "title": "Fullstack Engineer",
+  "location": "Tangerang, Indonesia",
+  "email": "adeputrasusila19@gmail.com",
+  "phone": "+62 81311452620",
+  "whatsapp": "+62 81311452620",
+  "linkedin": "https://linkedin.com/in/ade-putra-susila-468282174/",
+  "github": "https://github.com/adeputrasusila",
+  "bio": "Self-taught Fullstack Engineer with 5 years of experience. I've always found coding intuitive and push myself to learn the most effective ways to achieve results. Fast learner who can quickly integrate into any team.",
+  "highlights": [
+    "Improved Excel import performance: 1 hour to 2 mins for 30,000 rows",
+    "Handled Vulnerability Assessment and Penetration Testing",
+    "Built real-time dashboard processing millions of stock prices via WebSocket"
+  ],
+  "skills": {
+    "frontend": [
+      { "name": "React JS", "level": 95 },
+      { "name": "TypeScript", "level": 85 },
+      { "name": "HTML/CSS", "level": 90 }
+    ],
+    "backend": [
+      { "name": "Node.js", "level": 90 },
+      { "name": "NestJS", "level": 85 },
+      { "name": ".NET Core", "level": 80 },
+      { "name": "REST API", "level": 95 }
+    ],
+    "database": [
+      { "name": "PostgreSQL", "level": 85 },
+      { "name": "MySQL", "level": 85 },
+      { "name": "MongoDB", "level": 80 },
+      { "name": "Redis", "level": 75 },
+      { "name": "SQL Server", "level": 80 }
+    ],
+    "devops": [
+      { "name": "Docker", "level": 80 },
+      { "name": "Kubernetes", "level": 70 },
+      { "name": "Git", "level": 90 },
+      { "name": "IIS", "level": 75 }
+    ],
+    "other": [
+      { "name": "WebSocket", "level": 85 },
+      { "name": "Socket.IO", "level": 85 },
+      { "name": "Microservices", "level": 80 },
+      { "name": "Prisma", "level": 80 },
+      { "name": "Elasticsearch", "level": 70 }
+    ]
+  },
+  "education": {
+    "institution": "Bina Nusantara University",
+    "degree": "Bachelor of Computer Science",
+    "location": "Tangerang, Indonesia",
+    "period": "2016 - 2020",
+    "gpa": "3.05"
+  },
+  "social": {
+    "linkedin": "https://linkedin.com/in/ade-putra-susila-468282174/",
+    "github": "https://github.com/adeputrasusila",
+    "email": "mailto:adeputrasusila19@gmail.com",
+    "whatsapp": "https://wa.me/6281311452620"
+  }
+}

@@ -1,0 +1,53 @@
+---
+interface Props {
+  company: string;
+  role: string;
+  period: string;
+  industry: string;
+  project: string;
+  stack: string[];
+  achievements: string[];
+  index: number;
+}
+
+const { company, role, period, industry, project, stack, achievements, index } = Astro.props;
+---
+
+<div class="terminal-window mb-6">
+  <div class="terminal-header">
+    <span class="terminal-dot terminal-dot-red"></span>
+    <span class="terminal-dot terminal-dot-yellow"></span>
+    <span class="terminal-dot terminal-dot-green"></span>
+    <span class="terminal-title">session_{index}.log</span>
+  </div>
+  <div class="terminal-body">
+    <p class="text-terminal-muted mb-2">
+      # {period}
+    </p>
+    <p class="mb-1">
+      <span class="text-terminal-cyan">company</span>=<span class="text-terminal-orange">"{company}"</span>
+    </p>
+    <p class="mb-1">
+      <span class="text-terminal-cyan">industry</span>=<span class="text-terminal-muted">"{industry}"</span>
+    </p>
+    <p class="mb-1">
+      <span class="text-terminal-cyan">role</span>=<span class="text-terminal-green">"{role}"</span>
+    </p>
+    <p class="mb-1">
+      <span class="text-terminal-cyan">project</span>=<span class="text-terminal-green">"{project}"</span>
+    </p>
+    <p class="mb-3">
+      <span class="text-terminal-cyan">stack</span>=(<span class="text-terminal-yellow">{stack.map(s => `"${s}"`).join(' ')}</span>)
+    </p>
+
+    <p class="text-terminal-muted mb-1"># Achievements</p>
+    <ul class="space-y-1">
+      {achievements.map((achievement) => (
+        <li class="flex gap-2">
+          <span class="text-terminal-green">-&gt;</span>
+          <span class="text-terminal-green-dim">{achievement}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>

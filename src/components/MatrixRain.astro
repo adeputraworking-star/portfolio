@@ -1,0 +1,96 @@
+---
+// Matrix rain background component
+---
+
+<div id="matrix-container" class="fixed inset-0 z-0 pointer-events-none opacity-20">
+  <canvas id="matrix-canvas"></canvas>
+</div>
+
+<button
+  id="matrix-toggle"
+  class="fixed bottom-4 right-4 z-50 px-3 py-2 text-xs bg-bg-secondary border border-terminal-border rounded hover:border-terminal-green transition-all text-terminal-muted hover:text-terminal-green"
+  title="Toggle Matrix Rain"
+>
+  [matrix: <span id="matrix-status">on</span>]
+</button>
+
+<script>
+  const canvas = document.getElementById('matrix-canvas') as HTMLCanvasElement;
+  const ctx = canvas?.getContext('2d');
+  const container = document.getElementById('matrix-container');
+  const toggleBtn = document.getElementById('matrix-toggle');
+  const statusSpan = document.getElementById('matrix-status');
+
+  let animationId: number;
+  let isRunning = true;
+
+  if (canvas && ctx && container) {
+    // Set canvas size
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Matrix characters
+    const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize);
+
+    // Array of drops - one per column
+    const drops: number[] = [];
+    for (let i = 0; i < columns; i++) {
+      drops[i] = Math.random() * -100;
+    }
+
+    function draw() {
+      if (!ctx || !canvas) return;
+
+      // Semi-transparent black to create trail effect
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Green text
+      ctx.fillStyle = '#00ff00';
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        // Random character
+        const char = chars[Math.floor(Math.random() * chars.length)];
+
+        // Draw character
+        ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+        // Reset drop randomly after it passes screen
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+
+        drops[i]++;
+      }
+
+      if (isRunning) {
+        animationId = requestAnimationFrame(draw);
+      }
+    }
+
+    // Start animation
+    draw();
+
+    // Toggle functionality
+    toggleBtn?.addEventListener('click', () => {
+      isRunning = !isRunning;
+      if (isRunning) {
+        draw();
+        container.style.opacity = '0.2';
+        if (statusSpan) statusSpan.textContent = 'on';
+      } else {
+        cancelAnimationFrame(animationId);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        container.style.opacity = '0';
+        if (statusSpan) statusSpan.textContent = 'off';
+      }
+    });
+  }
+</script>

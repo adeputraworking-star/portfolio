@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Terminal from '../components/Terminal.astro';
+import profile from '../data/profile.json';
+---
+
+<BaseLayout title="Home">
+  <!-- Hero Section -->
+  <section class="min-h-[70vh] flex flex-col justify-center py-12">
+    <!-- ASCII Art Name -->
+    <pre class="ascii-art text-terminal-green text-xs sm:text-sm md:text-base glow-sm mb-8 overflow-x-auto">
+{`
+ █████╗ ██████╗ ███████╗
+██╔══██╗██╔══██╗██╔════╝
+███████║██║  ██║█████╗
+██╔══██║██║  ██║██╔══╝
+██║  ██║██████╔╝███████╗
+╚═╝  ╚═╝╚═════╝ ╚══════╝
+██████╗ ██╗   ██╗████████╗██████╗  █████╗
+██╔══██╗██║   ██║╚══██╔══╝██╔══██╗██╔══██╗
+██████╔╝██║   ██║   ██║   ██████╔╝███████║
+██╔═══╝ ██║   ██║   ██║   ██╔══██╗██╔══██║
+██║     ╚██████╔╝   ██║   ██║  ██║██║  ██║
+╚═╝      ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝
+███████╗██╗   ██╗███████╗██╗██╗      █████╗
+██╔════╝██║   ██║██╔════╝██║██║     ██╔══██╗
+███████╗██║   ██║███████╗██║██║     ███████║
+╚════██║██║   ██║╚════██║██║██║     ██╔══██║
+███████║╚██████╔╝███████║██║███████╗██║  ██║
+╚══════╝ ╚═════╝ ╚══════╝╚═╝╚══════╝╚═╝  ╚═╝
+`}
+    </pre>
+
+    <!-- Typing Introduction -->
+    <Terminal title="intro.sh" class="mb-8">
+      <div class="space-y-2">
+        <p>
+          <span class="text-terminal-cyan">visitor@ade-portfolio:~$</span>
+          <span class="text-terminal-green"> whoami</span>
+        </p>
+        <p class="text-terminal-green-dim" id="typing-intro">
+          > {profile.title} with 5 years of experience
+        </p>
+        <p>
+          <span class="text-terminal-cyan">visitor@ade-portfolio:~$</span>
+          <span class="text-terminal-green"> cat location.txt</span>
+        </p>
+        <p class="text-terminal-muted">
+          > {profile.location}
+        </p>
+        <p>
+          <span class="text-terminal-cyan">visitor@ade-portfolio:~$</span>
+          <span class="text-terminal-green cursor-blink">_</span>
+        </p>
+      </div>
+    </Terminal>
+
+    <!-- Quick Navigation -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <a href="/about" class="terminal-window hover:border-terminal-green transition-all group">
+        <div class="terminal-body text-center py-4">
+          <p class="text-terminal-cyan group-hover:glow-sm">cat</p>
+          <p class="text-terminal-green">about.txt</p>
+        </div>
+      </a>
+      <a href="/skills" class="terminal-window hover:border-terminal-green transition-all group">
+        <div class="terminal-body text-center py-4">
+          <p class="text-terminal-cyan group-hover:glow-sm">ls</p>
+          <p class="text-terminal-green">skills/</p>
+        </div>
+      </a>
+      <a href="/projects" class="terminal-window hover:border-terminal-green transition-all group">
+        <div class="terminal-body text-center py-4">
+          <p class="text-terminal-cyan group-hover:glow-sm">ls -la</p>
+          <p class="text-terminal-green">projects/</p>
+        </div>
+      </a>
+      <a href="/experience" class="terminal-window hover:border-terminal-green transition-all group">
+        <div class="terminal-body text-center py-4">
+          <p class="text-terminal-cyan group-hover:glow-sm">history</p>
+          <p class="text-terminal-green">--all</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Highlights Section -->
+  <section class="py-12">
+    <Terminal title="highlights.log">
+      <p class="text-terminal-muted mb-4"># Key Achievements</p>
+      {profile.highlights.map((highlight, i) => (
+        <p class="mb-2">
+          <span class="text-terminal-orange">[{String(i + 1).padStart(2, '0')}]</span>
+          <span class="text-terminal-green-dim"> {highlight}</span>
+        </p>
+      ))}
+    </Terminal>
+  </section>
+</BaseLayout>

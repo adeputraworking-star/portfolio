@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Terminal from '../../components/Terminal.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const sortedPosts = posts.sort((a, b) =>
+  new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+---
+
+<BaseLayout title="Blog" description="Technical blog posts and articles by Ade Putra Susila">
+  <section class="py-8">
+    <!-- Command Header -->
+    <div class="mb-8">
+      <p class="text-terminal-cyan mb-2">visitor@ade-portfolio:~$</p>
+      <h1 class="text-2xl md:text-3xl text-terminal-green glow-sm">tail -f blog/</h1>
+    </div>
+
+    <!-- Blog Posts -->
+    {sortedPosts.length > 0 ? (
+      <div class="space-y-6">
+        {sortedPosts.map((post) => (
+          <a href={`/blog/${post.slug}`} class="block terminal-window hover:border-terminal-green transition-all">
+            <div class="terminal-header">
+              <span class="terminal-dot terminal-dot-red"></span>
+              <span class="terminal-dot terminal-dot-yellow"></span>
+              <span class="terminal-dot terminal-dot-green"></span>
+              <span class="terminal-title">{post.slug}.md</span>
+            </div>
+            <div class="terminal-body">
+              <p class="text-terminal-muted text-sm mb-2">
+                [{new Date(post.data.date).toISOString().split('T')[0]}]
+              </p>
+              <h2 class="text-terminal-orange text-lg mb-2"># {post.data.title}</h2>
+              <p class="text-terminal-green-dim mb-3">{post.data.description}</p>
+              <div class="flex flex-wrap gap-2">
+                {post.data.tags?.map((tag: string) => (
+                  <span class="px-2 py-1 bg-bg-tertiary text-terminal-cyan text-xs rounded">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <Terminal title="blog/">
+        <p class="text-terminal-muted mb-2"># No blog posts yet</p>
+        <p class="text-terminal-green">
+          > Blog posts coming soon...
+        </p>
+        <p class="text-terminal-muted mt-4">
+          # Check back later for technical articles about:
+        </p>
+        <ul class="text-terminal-cyan mt-2 space-y-1">
+          <li>- React & Node.js best practices</li>
+          <li>- Performance optimization techniques</li>
+          <li>- System design patterns</li>
+          <li>- Real-time applications with WebSocket</li>
+        </ul>
+      </Terminal>
+    )}
+  </section>
+</BaseLayout>

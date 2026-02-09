@@ -1,0 +1,208 @@
+/* JetBrains Mono from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+@import 'tailwindcss';
+
+@theme {
+  /* Terminal Color Palette */
+  --color-bg-primary: #0a0a0a;
+  --color-bg-secondary: #1a1a1a;
+  --color-bg-tertiary: #2a2a2a;
+  --color-terminal-green: #00ff00;
+  --color-terminal-green-dim: #00cc00;
+  --color-terminal-cyan: #00ffff;
+  --color-terminal-orange: #ff6600;
+  --color-terminal-red: #ff3333;
+  --color-terminal-yellow: #ffff00;
+  --color-terminal-muted: #666666;
+  --color-terminal-border: #333333;
+
+  /* Font */
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+}
+
+/* Base Styles */
+html {
+  font-family: var(--font-mono);
+  background-color: var(--color-bg-primary);
+  color: var(--color-terminal-green);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-terminal-green);
+  color: var(--color-bg-primary);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-terminal-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-terminal-muted);
+}
+
+/* Links */
+a {
+  color: var(--color-terminal-cyan);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-terminal-green);
+  text-shadow: 0 0 8px var(--color-terminal-green);
+}
+
+/* Text Glow Effect */
+.glow {
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+}
+
+.glow-sm {
+  text-shadow: 0 0 5px currentColor;
+}
+
+/* Blinking Cursor */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Typing Animation */
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.typing {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 2s steps(40, end);
+}
+
+/* Scanline Effect (subtle) */
+.scanlines::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Terminal Window */
+.terminal-window {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-terminal-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.terminal-header {
+  background-color: var(--color-bg-tertiary);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--color-terminal-border);
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.terminal-dot-red { background-color: #ff5f56; }
+.terminal-dot-yellow { background-color: #ffbd2e; }
+.terminal-dot-green { background-color: #27ca40; }
+
+.terminal-title {
+  flex: 1;
+  text-align: center;
+  color: var(--color-terminal-muted);
+  font-size: 0.875rem;
+}
+
+.terminal-body {
+  padding: 16px;
+}
+
+/* Command Prompt */
+.prompt {
+  color: var(--color-terminal-cyan);
+}
+
+.prompt::before {
+  content: 'visitor@ade-portfolio:~$ ';
+}
+
+/* Progress Bar */
+.progress-bar {
+  font-family: var(--font-mono);
+}
+
+.progress-bar::before {
+  content: '[';
+  color: var(--color-terminal-muted);
+}
+
+.progress-bar::after {
+  content: ']';
+  color: var(--color-terminal-muted);
+}
+
+/* Code blocks */
+pre, code {
+  font-family: var(--font-mono);
+  background-color: var(--color-bg-tertiary);
+  border-radius: 4px;
+}
+
+code {
+  padding: 2px 6px;
+}
+
+pre {
+  padding: 16px;
+  overflow-x: auto;
+}
+
+/* ASCII Art */
+.ascii-art {
+  font-family: var(--font-mono);
+  line-height: 1.2;
+  white-space: pre;
+  color: var(--color-terminal-green);
+}

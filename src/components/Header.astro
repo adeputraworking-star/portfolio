@@ -12,7 +12,7 @@ const navItems = [
 const currentPath = Astro.url.pathname;
 ---
 
-<header class="sticky top-0 z-50 bg-bg-primary/95 backdrop-blur border-b border-terminal-border">
+<header class="sticky top-0 z-50 bg-bg-primary/95 backdrop-blur border-b border-terminal-border" data-tour-id="header-nav">
   <nav class="container mx-auto px-4 max-w-5xl">
     <div class="flex items-center justify-between h-14">
       <!-- Logo -->
@@ -22,6 +22,17 @@ const currentPath = Astro.url.pathname;
 
       <!-- Desktop Navigation -->
       <ul class="hidden md:flex items-center gap-1">
+        <!-- Tour Restart Button -->
+        <li>
+          <button
+            id="restart-tour"
+            class="px-2 py-2 text-sm text-terminal-muted hover:text-terminal-green hover:bg-bg-secondary rounded transition-all"
+            title="Restart tour"
+            aria-label="Restart guided tour"
+          >
+            [?]
+          </button>
+        </li>
         {navItems.map((item) => (
           <li>
             <a

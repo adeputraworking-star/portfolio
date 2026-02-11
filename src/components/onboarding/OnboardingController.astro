@@ -1,0 +1,20 @@
+---
+// OnboardingController.astro - Main orchestrator for the tour system
+import CatGuide from './CatGuide.astro';
+import SpeechBubble from './SpeechBubble.astro';
+import TourSpotlight from './TourSpotlight.astro';
+---
+
+<!-- Tour Overlay (background) -->
+<TourSpotlight />
+
+<!-- Speech Bubble (messages) -->
+<SpeechBubble />
+
+<!-- Cat Guide (mascot) -->
+<CatGuide />
+
+<!-- Import tour logic -->
+<script>
+  import '../../scripts/tour.ts';
+</script>

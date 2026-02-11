@@ -1,0 +1,454 @@
+---
+// SpeechBubble.astro - Terminal-styled chat bubble with typewriter effect
+---
+
+<div id="speech-bubble" class="speech-bubble hidden" role="dialog" aria-label="Tour guide message">
+  <div class="bubble-container">
+    <!-- Terminal-style header -->
+    <div class="bubble-header">
+      <div class="bubble-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <span class="bubble-title">neko@guide:~$</span>
+    </div>
+
+    <!-- Message content -->
+    <div class="bubble-body">
+      <div id="bubble-message" class="bubble-message">
+        <span class="message-text"></span>
+        <span class="cursor">_</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="bubble-controls">
+      <button id="tour-prev" class="tour-btn tour-btn-secondary" aria-label="Previous step">
+        <span class="btn-bracket">[</span>
+        <span class="btn-text">PREV</span>
+        <span class="btn-bracket">]</span>
+      </button>
+      <div class="tour-progress">
+        <span id="tour-step-current">1</span>
+        <span class="progress-separator">/</span>
+        <span id="tour-step-total">11</span>
+      </div>
+      <button id="tour-next" class="tour-btn tour-btn-primary" aria-label="Next step">
+        <span class="btn-bracket">[</span>
+        <span class="btn-text">NEXT</span>
+        <span class="btn-bracket">]</span>
+      </button>
+      <button id="tour-skip" class="tour-btn tour-btn-skip" aria-label="Skip tour">
+        <span class="btn-text">SKIP</span>
+        <span class="btn-arrow">>></span>
+      </button>
+    </div>
+
+    <!-- Keyboard hints (desktop only) -->
+    <div class="keyboard-hints">
+      <span class="hint">Enter: Next</span>
+      <span class="hint-separator">|</span>
+      <span class="hint">Esc: Skip</span>
+    </div>
+
+    <!-- Arrow pointing to cat -->
+    <div class="bubble-arrow"></div>
+  </div>
+</div>
+
+<style>
+  .speech-bubble {
+    position: fixed;
+    bottom: 120px;
+    right: 20px;
+    z-index: 10002;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: bottom right;
+  }
+
+  .speech-bubble.hidden {
+    opacity: 0;
+    transform: scale(0.8) translateY(10px);
+    pointer-events: none;
+  }
+
+  .bubble-container {
+    position: relative;
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid var(--color-terminal-green, #00ff00);
+    border-radius: 8px;
+    min-width: 280px;
+    max-width: 350px;
+    box-shadow:
+      0 0 20px rgba(0, 255, 0, 0.2),
+      0 4px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Terminal header */
+  .bubble-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(26, 26, 26, 0.8);
+    border-bottom: 1px solid var(--color-terminal-border, #333);
+    border-radius: 8px 8px 0 0;
+  }
+
+  .bubble-dots {
+    display: flex;
+    gap: 4px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .dot-red { background: #ff5f56; }
+  .dot-yellow { background: #ffbd2e; }
+  .dot-green { background: #27ca40; }
+
+  .bubble-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--color-terminal-muted, #666);
+  }
+
+  /* Message body */
+  .bubble-body {
+    padding: 16px;
+    min-height: 60px;
+  }
+
+  .bubble-message {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-terminal-green, #00ff00);
+  }
+
+  .message-text {
+    white-space: pre-wrap;
+  }
+
+  .cursor {
+    display: inline-block;
+    animation: cursor-blink 1s step-end infinite;
+    color: var(--color-terminal-green, #00ff00);
+  }
+
+  @keyframes cursor-blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  /* Controls */
+  .bubble-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-terminal-border, #333);
+  }
+
+  .tour-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    transition: all 0.2s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .tour-btn:focus {
+    outline: 1px solid var(--color-terminal-green, #00ff00);
+    outline-offset: 2px;
+  }
+
+  .tour-btn-secondary {
+    color: var(--color-terminal-muted, #666);
+  }
+
+  .tour-btn-secondary:hover {
+    color: var(--color-terminal-green, #00ff00);
+    background: rgba(0, 255, 0, 0.1);
+  }
+
+  .tour-btn-secondary:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .tour-btn-primary {
+    color: var(--color-terminal-green, #00ff00);
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  }
+
+  .tour-btn-primary:hover {
+    background: rgba(0, 255, 0, 0.15);
+    text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+  }
+
+  .tour-btn-skip {
+    color: var(--color-terminal-orange, #ff6600);
+    margin-left: auto;
+  }
+
+  .tour-btn-skip:hover {
+    background: rgba(255, 102, 0, 0.1);
+  }
+
+  .btn-bracket {
+    opacity: 0.5;
+  }
+
+  .btn-arrow {
+    margin-left: 4px;
+  }
+
+  /* Progress indicator */
+  .tour-progress {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--color-terminal-muted, #666);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .progress-separator {
+    opacity: 0.5;
+  }
+
+  #tour-step-current {
+    color: var(--color-terminal-cyan, #00ffff);
+  }
+
+  /* Keyboard hints */
+  .keyboard-hints {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--color-terminal-muted, #666);
+    border-top: 1px solid rgba(51, 51, 51, 0.5);
+  }
+
+  .hint-separator {
+    opacity: 0.3;
+  }
+
+  /* Arrow pointing to cat */
+  .bubble-arrow {
+    position: absolute;
+    bottom: -10px;
+    right: 30px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid var(--color-terminal-green, #00ff00);
+  }
+
+  .bubble-arrow::before {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    left: -9px;
+    width: 0;
+    height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 9px solid rgba(10, 10, 10, 0.95);
+  }
+
+  /* Welcome screen variant (larger, centered) */
+  .speech-bubble.welcome-mode {
+    bottom: auto;
+    right: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .speech-bubble.welcome-mode .bubble-container {
+    min-width: 400px;
+    max-width: 500px;
+  }
+
+  .speech-bubble.welcome-mode .bubble-arrow {
+    display: none;
+  }
+
+  .speech-bubble.welcome-mode .keyboard-hints {
+    padding: 12px 16px;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .speech-bubble {
+      bottom: 0;
+      right: 0;
+      left: 0;
+      border-radius: 0;
+    }
+
+    .bubble-container {
+      min-width: 100%;
+      max-width: 100%;
+      border-radius: 16px 16px 0 0;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .bubble-header {
+      border-radius: 16px 16px 0 0;
+    }
+
+    .bubble-arrow {
+      display: none;
+    }
+
+    .keyboard-hints {
+      display: none;
+    }
+
+    .speech-bubble.welcome-mode {
+      top: auto;
+      bottom: 0;
+      transform: none;
+    }
+
+    .speech-bubble.welcome-mode .bubble-container {
+      min-width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .speech-bubble {
+      transition: opacity 0.2s ease;
+    }
+
+    .cursor {
+      animation: none;
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  // Speech bubble controller with typewriter effect
+  window.speechBubble = {
+    element: null,
+    messageEl: null,
+    textEl: null,
+    cursorEl: null,
+    currentStep: 1,
+    totalSteps: 11,
+    isTyping: false,
+    typeInterval: null,
+
+    init() {
+      this.element = document.getElementById('speech-bubble');
+      this.messageEl = document.getElementById('bubble-message');
+      this.textEl = this.messageEl?.querySelector('.message-text');
+      this.cursorEl = this.messageEl?.querySelector('.cursor');
+      this.updateProgress();
+    },
+
+    show(welcomeMode = false) {
+      if (this.element) {
+        this.element.classList.remove('hidden');
+        if (welcomeMode) {
+          this.element.classList.add('welcome-mode');
+        } else {
+          this.element.classList.remove('welcome-mode');
+        }
+      }
+    },
+
+    hide() {
+      if (this.element) {
+        this.element.classList.add('hidden');
+      }
+      this.stopTyping();
+    },
+
+    async typeMessage(message: string, speed = 30) {
+      if (!this.textEl) return;
+
+      this.stopTyping();
+      this.isTyping = true;
+      this.textEl.textContent = '';
+
+      let index = 0;
+
+      return new Promise<void>((resolve) => {
+        this.typeInterval = setInterval(() => {
+          if (index < message.length) {
+            this.textEl!.textContent += message[index];
+            index++;
+          } else {
+            this.stopTyping();
+            resolve();
+          }
+        }, speed);
+      });
+    },
+
+    setMessage(message: string) {
+      if (this.textEl) {
+        this.textEl.textContent = message;
+      }
+    },
+
+    stopTyping() {
+      if (this.typeInterval) {
+        clearInterval(this.typeInterval);
+        this.typeInterval = null;
+      }
+      this.isTyping = false;
+    },
+
+    skipTyping(fullMessage: string) {
+      this.stopTyping();
+      if (this.textEl) {
+        this.textEl.textContent = fullMessage;
+      }
+    },
+
+    setStep(current: number, total: number) {
+      this.currentStep = current;
+      this.totalSteps = total;
+      this.updateProgress();
+    },
+
+    updateProgress() {
+      const currentEl = document.getElementById('tour-step-current');
+      const totalEl = document.getElementById('tour-step-total');
+      const prevBtn = document.getElementById('tour-prev') as HTMLButtonElement;
+
+      if (currentEl) currentEl.textContent = String(this.currentStep);
+      if (totalEl) totalEl.textContent = String(this.totalSteps);
+      if (prevBtn) prevBtn.disabled = this.currentStep <= 1;
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    window.speechBubble.init();
+  });
+</script>

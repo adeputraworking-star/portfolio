@@ -1,0 +1,245 @@
+---
+// TourSpotlight.astro - Overlay with dynamic spotlight cutout
+---
+
+<div id="tour-overlay" class="tour-overlay hidden" aria-hidden="true">
+  <!-- Dark overlay backdrop -->
+  <div class="overlay-backdrop"></div>
+
+  <!-- Spotlight highlight element -->
+  <div id="tour-spotlight" class="tour-spotlight"></div>
+
+  <!-- Click-to-skip hint -->
+  <div class="overlay-hint">
+    <span>Click anywhere to continue</span>
+  </div>
+</div>
+
+<style>
+  .tour-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    pointer-events: auto;
+    transition: opacity 0.3s ease;
+  }
+
+  .tour-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 10, 0.5);
+    transition: opacity 0.3s ease;
+  }
+
+  /* Spotlight element */
+  .tour-spotlight {
+    position: absolute;
+    border-radius: 8px;
+    background: rgba(10, 10, 10, 0.3);
+    border: 2px solid rgba(0, 255, 0, 0.6);
+    box-shadow:
+      0 0 0 9999px rgba(10, 10, 10, 0.5),
+      0 0 40px 10px rgba(0, 255, 0, 0.3),
+      0 0 80px 20px rgba(0, 255, 0, 0.15),
+      inset 0 0 30px rgba(0, 255, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+
+  .tour-spotlight.hidden {
+    opacity: 0;
+  }
+
+  /* Pulse animation for spotlight */
+  .tour-spotlight.active {
+    animation: spotlight-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes spotlight-pulse {
+    0%, 100% {
+      box-shadow:
+        0 0 0 9999px rgba(10, 10, 10, 0.5),
+        0 0 40px 10px rgba(0, 255, 0, 0.3),
+        0 0 80px 20px rgba(0, 255, 0, 0.15),
+        inset 0 0 30px rgba(0, 255, 0, 0.1);
+      border-color: rgba(0, 255, 0, 0.6);
+    }
+    50% {
+      box-shadow:
+        0 0 0 9999px rgba(10, 10, 10, 0.5),
+        0 0 60px 15px rgba(0, 255, 0, 0.4),
+        0 0 100px 30px rgba(0, 255, 0, 0.2),
+        inset 0 0 40px rgba(0, 255, 0, 0.15);
+      border-color: rgba(0, 255, 0, 0.9);
+    }
+  }
+
+  /* Overlay hint */
+  .overlay-hint {
+    position: fixed;
+    bottom: 180px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--color-terminal-muted, #666);
+    opacity: 0;
+    animation: hint-fade 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes hint-fade {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Welcome mode - no spotlight, just backdrop */
+  .tour-overlay.welcome-mode .tour-spotlight {
+    display: none;
+  }
+
+  .tour-overlay.welcome-mode .overlay-hint {
+    display: none;
+  }
+
+  .tour-overlay.welcome-mode .overlay-backdrop {
+    background: rgba(10, 10, 10, 0.85);
+  }
+
+  /* Scanline effect on overlay */
+  .tour-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(0, 0, 0, 0.03) 1px,
+      rgba(0, 0, 0, 0.03) 2px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .overlay-hint {
+      bottom: auto;
+      top: 20px;
+    }
+
+    .tour-spotlight {
+      border-radius: 4px;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .tour-spotlight {
+      transition: opacity 0.2s ease;
+      animation: none !important;
+    }
+
+    .overlay-hint {
+      animation: none;
+      opacity: 0.5;
+    }
+  }
+</style>
+
+<script>
+  // Tour spotlight controller
+  window.tourSpotlight = {
+    overlay: null,
+    spotlight: null,
+    padding: 12,
+
+    init() {
+      this.overlay = document.getElementById('tour-overlay');
+      this.spotlight = document.getElementById('tour-spotlight');
+    },
+
+    show(welcomeMode = false) {
+      if (this.overlay) {
+        this.overlay.classList.remove('hidden');
+        if (welcomeMode) {
+          this.overlay.classList.add('welcome-mode');
+        } else {
+          this.overlay.classList.remove('welcome-mode');
+        }
+      }
+    },
+
+    hide() {
+      if (this.overlay) {
+        this.overlay.classList.add('hidden');
+      }
+      if (this.spotlight) {
+        this.spotlight.classList.remove('active');
+      }
+    },
+
+    highlightElement(selector: string | null) {
+      if (!selector || !this.spotlight) {
+        // No element to highlight - hide spotlight
+        this.spotlight?.classList.add('hidden');
+        return;
+      }
+
+      const element = document.querySelector(selector);
+      if (!element) {
+        console.warn(`Tour: Element not found: ${selector}`);
+        this.spotlight.classList.add('hidden');
+        return;
+      }
+
+      // Get element bounds
+      const rect = element.getBoundingClientRect();
+
+      // Position spotlight
+      this.spotlight.style.top = `${rect.top - this.padding}px`;
+      this.spotlight.style.left = `${rect.left - this.padding}px`;
+      this.spotlight.style.width = `${rect.width + this.padding * 2}px`;
+      this.spotlight.style.height = `${rect.height + this.padding * 2}px`;
+
+      this.spotlight.classList.remove('hidden');
+      this.spotlight.classList.add('active');
+
+      // Scroll element into view if needed
+      const viewportHeight = window.innerHeight;
+      const elementCenter = rect.top + rect.height / 2;
+
+      if (elementCenter < 100 || elementCenter > viewportHeight - 200) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+
+        // Update spotlight position after scroll
+        setTimeout(() => {
+          this.highlightElement(selector);
+        }, 500);
+      }
+    },
+
+    setWelcomeMode(enabled: boolean) {
+      if (this.overlay) {
+        if (enabled) {
+          this.overlay.classList.add('welcome-mode');
+        } else {
+          this.overlay.classList.remove('welcome-mode');
+        }
+      }
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    window.tourSpotlight.init();
+  });
+</script>

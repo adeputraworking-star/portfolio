@@ -8,7 +8,7 @@ import profile from '../data/profile.json';
   <!-- Hero Section -->
   <section class="min-h-[70vh] flex flex-col justify-center py-12">
     <!-- ASCII Art Name -->
-    <pre class="ascii-art text-terminal-green text-xs sm:text-sm md:text-base glow-sm mb-8 overflow-x-auto">
+    <pre class="ascii-art text-terminal-green text-xs sm:text-sm md:text-base glow-sm mb-8 overflow-x-auto" data-tour-id="ascii-art">
 {`
  █████╗ ██████╗ ███████╗
 ██╔══██╗██╔══██╗██╔════╝
@@ -32,6 +32,7 @@ import profile from '../data/profile.json';
     </pre>
 
     <!-- Typing Introduction -->
+    <div data-tour-id="intro-terminal">
     <Terminal title="intro.sh" class="mb-8">
       <div class="space-y-2">
         <p>
@@ -54,9 +55,10 @@ import profile from '../data/profile.json';
         </p>
       </div>
     </Terminal>
+    </div>
 
     <!-- Quick Navigation -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" data-tour-id="nav-cards">
       <a href="/about" class="terminal-window hover:border-terminal-green transition-all group">
         <div class="terminal-body text-center py-4">
           <p class="text-terminal-cyan group-hover:glow-sm">cat</p>

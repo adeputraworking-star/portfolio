@@ -25,9 +25,44 @@ interface TourState {
 // Constants
 const STORAGE_KEY = 'portfolio_tour_v1';
 const TOUR_STEP_KEY = 'portfolio_tour_step';
+const TOUR_ACTIVE_KEY = 'portfolio_tour_active';
 const TYPING_SPEED = 25; // ms per character
 const HOME_PATH = '/';
 const TOUR_PARAM = 'start-tour';
+
+// Page navigation order
+const pageOrder = ['/', '/about', '/skills', '/projects', '/experience', '/contact', '/blog'];
+
+// Get next page in tour
+function getNextPage(currentPage: string): string | null {
+  const currentIndex = pageOrder.indexOf(currentPage);
+  if (currentIndex === -1 || currentIndex >= pageOrder.length - 1) {
+    return null; // No next page
+  }
+  return pageOrder[currentIndex + 1];
+}
+
+// Mark tour as actively in progress (for multi-page tour)
+function setTourActive(active: boolean): void {
+  try {
+    if (active) {
+      localStorage.setItem(TOUR_ACTIVE_KEY, 'true');
+    } else {
+      localStorage.removeItem(TOUR_ACTIVE_KEY);
+    }
+  } catch {
+    // localStorage not available
+  }
+}
+
+// Check if tour is actively in progress
+function isTourActive(): boolean {
+  try {
+    return localStorage.getItem(TOUR_ACTIVE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
 
 // Cat names for each page
 const catNames: Record<string, string> = {
@@ -70,7 +105,7 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'nav-cards',
       target: '[data-tour-id="nav-cards"]',
       animation: 'pointing',
-      message: 'These cards are shortcuts to explore different sections. Each page has its own cat guide!',
+      message: 'These cards are shortcuts to explore different sections.',
       page: '/',
     },
     {
@@ -84,9 +119,10 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'complete',
       target: null,
       animation: 'celebrating',
-      message: "That's my tour! Visit other pages to meet my friends - Mochi, Yuki, Shadow, Patches, and Splash!",
+      message: "That's my tour! Click Next to meet Mochi on the About page!",
       welcomeMode: true,
       page: '/',
+      navigateTo: '/about',
     },
   ],
 
@@ -96,7 +132,7 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'welcome',
       target: null,
       animation: 'waving',
-      message: "Hey there! I'm Mochi, the orange cat! Let me tell you about Ade!",
+      message: "Hey there! I'm Mochi, the orange cat! Neko sent you? Let me tell you about Ade!",
       welcomeMode: true,
       page: '/about',
     },
@@ -118,9 +154,10 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'complete',
       target: null,
       animation: 'celebrating',
-      message: "That's all about Ade! Check out Skills to meet Yuki, or click me anytime!",
+      message: "That's all about Ade! Click Next to meet Yuki on the Skills page!",
       welcomeMode: true,
       page: '/about',
+      navigateTo: '/skills',
     },
   ],
 
@@ -130,7 +167,7 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'welcome',
       target: null,
       animation: 'waving',
-      message: "Purr! I'm Yuki, the white cat! Let me show you Ade's technical skills!",
+      message: "Purr! I'm Yuki, the white cat! Mochi told me you're coming! Let me show you Ade's skills!",
       welcomeMode: true,
       page: '/skills',
     },
@@ -145,9 +182,10 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'complete',
       target: null,
       animation: 'celebrating',
-      message: "So many skills! Visit Projects to meet Shadow the black cat!",
+      message: "So many skills! Click Next to meet Shadow on the Projects page!",
       welcomeMode: true,
       page: '/skills',
+      navigateTo: '/projects',
     },
   ],
 
@@ -157,7 +195,7 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'welcome',
       target: null,
       animation: 'waving',
-      message: "*emerges from shadows* I'm Shadow. Let me show you the projects...",
+      message: "*emerges from shadows* I'm Shadow. Yuki mentioned you... Let me show you the projects.",
       welcomeMode: true,
       page: '/projects',
     },
@@ -172,9 +210,10 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'complete',
       target: null,
       animation: 'celebrating',
-      message: "Impressive work... *fades into shadows* Visit Experience to meet Patches!",
+      message: "Impressive work... Click Next to meet Patches on the Experience page...",
       welcomeMode: true,
       page: '/projects',
+      navigateTo: '/experience',
     },
   ],
 
@@ -184,7 +223,7 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'welcome',
       target: null,
       animation: 'waving',
-      message: "Meow meow! I'm Patches the calico! Let's explore the career journey!",
+      message: "Meow meow! I'm Patches the calico! Shadow said you're on a tour! Let's see the career journey!",
       welcomeMode: true,
       page: '/experience',
     },
@@ -199,9 +238,10 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'complete',
       target: null,
       animation: 'celebrating',
-      message: "What a journey! Head to Contact to meet Splash and say hi to Ade!",
+      message: "What a journey! Click Next to meet Splash on the Contact page!",
       welcomeMode: true,
       page: '/experience',
+      navigateTo: '/contact',
     },
   ],
 
@@ -211,7 +251,7 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'welcome',
       target: null,
       animation: 'waving',
-      message: "Splashy hello! I'm Splash! Ready to connect with Ade?",
+      message: "Splashy hello! I'm Splash! Patches told me you've met everyone! Ready to connect with Ade?",
       welcomeMode: true,
       page: '/contact',
     },
@@ -226,9 +266,10 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'complete',
       target: null,
       animation: 'celebrating',
-      message: "Don't be shy, send a message! Thanks for visiting - come back anytime!",
+      message: "Almost done! Click Next to meet Pixel on the Blog page!",
       welcomeMode: true,
       page: '/contact',
+      navigateTo: '/blog',
     },
   ],
 
@@ -238,7 +279,7 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'welcome',
       target: null,
       animation: 'waving',
-      message: "Nyaa~! I'm Pixel, the purple cat! Welcome to the blog!",
+      message: "Nyaa~! I'm Pixel, the last cat! You've met everyone! Welcome to the blog!",
       welcomeMode: true,
       page: '/blog',
     },
@@ -253,7 +294,7 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'complete',
       target: null,
       animation: 'celebrating',
-      message: "Stay tuned for more posts! Don't forget to check out the other pages!",
+      message: "Tour complete! You've met all 7 cats! Feel free to explore anytime! 🐱",
       welcomeMode: true,
       page: '/blog',
     },
@@ -430,7 +471,15 @@ async function nextStep(): Promise<void> {
     state.currentStep++;
     await renderStep();
   } else {
-    // Tour complete
+    // Check if we should navigate to next page
+    const currentStep = getCurrentStep();
+    if (currentStep.navigateTo) {
+      // Mark tour as active and navigate
+      setTourActive(true);
+      window.location.href = currentStep.navigateTo;
+      return;
+    }
+    // Tour complete - no more pages
     completeTour();
   }
 }
@@ -447,6 +496,7 @@ async function prevStep(): Promise<void> {
 
 // Skip/end tour
 function skipTour(): void {
+  setTourActive(false); // Stop multi-page tour
   completeTour();
 }
 
@@ -456,6 +506,7 @@ function completeTour(): void {
   state.hasCompleted = true;
   markTourCompleted();
   clearSavedTourStep();
+  setTourActive(false); // Clear multi-page tour state
 
   // Hide overlay and speech bubble
   if (window.tourSpotlight) {
@@ -480,6 +531,9 @@ async function startTour(): Promise<void> {
   state.currentStep = 0;
   state.isActive = true;
   state.hasCompleted = false;
+
+  // Mark tour as active for multi-page navigation
+  setTourActive(true);
 
   // Show cat with entrance animation
   if (window.catGuide) {
@@ -554,6 +608,14 @@ function initTour(): void {
   setTimeout(() => {
     setupKeyboardNav();
     setupButtonControls();
+
+    // Check if tour is actively in progress (navigated from another page)
+    if (isTourActive()) {
+      setTimeout(() => {
+        startTour();
+      }, 500);
+      return;
+    }
 
     // Check if we should start tour from URL parameter
     if (shouldStartFromUrl()) {

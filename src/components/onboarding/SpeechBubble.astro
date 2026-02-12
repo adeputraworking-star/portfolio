@@ -396,11 +396,23 @@
       this.textEl.textContent = '';
 
       let index = 0;
+      let soundCounter = 0;
 
       return new Promise<void>((resolve) => {
         this.typeInterval = setInterval(() => {
           if (index < message.length) {
-            this.textEl!.textContent += message[index];
+            const char = message[index];
+            this.textEl!.textContent += char;
+
+            // Play typing sound (skip spaces for more natural feel)
+            if (window.soundManager && char !== ' ') {
+              soundCounter++;
+              // Play sound every 2-3 characters for less spam
+              if (soundCounter % 2 === 0) {
+                window.soundManager.playTypingSound();
+              }
+            }
+
             index++;
           } else {
             this.stopTyping();

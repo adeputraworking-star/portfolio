@@ -432,6 +432,11 @@ async function renderStep(): Promise<void> {
     window.catGuide.setAnimation(step.animation);
   }
 
+  // Play purr during celebrating animation
+  if (step.animation === 'celebrating' && window.soundManager) {
+    window.soundManager.playPurr();
+  }
+
   // Update spotlight
   if (window.tourSpotlight) {
     if (step.welcomeMode) {
@@ -469,6 +474,10 @@ async function nextStep(): Promise<void> {
 
   if (state.currentStep < tourSteps.length - 1) {
     state.currentStep++;
+    // Play meow when going to next step
+    if (window.soundManager && state.currentStep % 2 === 0) {
+      window.soundManager.playMeow();
+    }
     await renderStep();
   } else {
     // Check if we should navigate to next page
@@ -508,6 +517,11 @@ function completeTour(): void {
   clearSavedTourStep();
   setTourActive(false); // Clear multi-page tour state
 
+  // Play success sound
+  if (window.soundManager) {
+    window.soundManager.playSuccess();
+  }
+
   // Hide overlay and speech bubble
   if (window.tourSpotlight) {
     window.tourSpotlight.hide();
@@ -525,6 +539,13 @@ function completeTour(): void {
 
 // Start the tour
 async function startTour(): Promise<void> {
+  // Initialize sound manager on tour start (requires user interaction)
+  if (window.soundManager) {
+    window.soundManager.init();
+    window.soundManager.playMeow();
+    window.soundManager.startAmbientPurr();
+  }
+
   // Load tour steps for current page
   loadTourForCurrentPage();
 
@@ -588,8 +609,12 @@ function setupButtonControls(): void {
       e.preventDefault();
       skipTour();
     } else if (target.closest('#cat-guide') && !state.isActive) {
-      // Click on cat when tour is not active - restart tour
+      // Click on cat when tour is not active - purr and restart tour
       e.preventDefault();
+      if (window.soundManager) {
+        window.soundManager.init();
+        window.soundManager.playPurr();
+      }
       restartTour();
     } else if (target.closest('#restart-tour')) {
       // Click on restart button
@@ -612,6 +637,12 @@ function initTour(): void {
     // Check if tour is actively in progress (navigated from another page)
     if (isTourActive()) {
       setTimeout(() => {
+        // Initialize sound manager for continuing tour
+        if (window.soundManager) {
+          window.soundManager.init();
+          window.soundManager.playMeow();
+          window.soundManager.startAmbientPurr();
+        }
         startTour();
       }, 500);
       return;
@@ -670,6 +701,21 @@ declare global {
       highlightElement: (selector: string | null) => void;
       setWelcomeMode: (enabled: boolean) => void;
     };
+    soundManager: {
+      audioContext: AudioContext | null;
+      isEnabled: boolean;
+      volume: number;
+      purrInterval: number | null;
+      init: () => void;
+      playTypingSound: () => void;
+      playMeow: () => void;
+      playPurr: () => void;
+      playSuccess: () => void;
+      startAmbientPurr: () => void;
+      stopAmbientPurr: () => void;
+      setEnabled: (enabled: boolean) => void;
+      setVolume: (volume: number) => void;
+    };
     portfolioTour: {
       start: () => Promise<void>;
       restart: () => Promise<void>;
@@ -690,11 +736,34 @@ window.portfolioTour = {
   isActive: () => state.isActive,
 };
 
+// Initialize ambient sounds on first user interaction
+let soundsInitialized = false;
+function initSoundsOnInteraction(): void {
+  if (soundsInitialized) return;
+  soundsInitialized = true;
+
+  if (window.soundManager) {
+    window.soundManager.init();
+    window.soundManager.startAmbientPurr();
+  }
+
+  // Remove listeners after first interaction
+  document.removeEventListener('click', initSoundsOnInteraction);
+  document.removeEventListener('keydown', initSoundsOnInteraction);
+}
+
 // Auto-init on DOM ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initTour);
+  document.addEventListener('DOMContentLoaded', () => {
+    initTour();
+    // Listen for first user interaction to start ambient sounds
+    document.addEventListener('click', initSoundsOnInteraction);
+    document.addEventListener('keydown', initSoundsOnInteraction);
+  });
 } else {
   initTour();
+  document.addEventListener('click', initSoundsOnInteraction);
+  document.addEventListener('keydown', initSoundsOnInteraction);
 }
 
 export { startTour, restartTour, skipTour, nextStep, prevStep };

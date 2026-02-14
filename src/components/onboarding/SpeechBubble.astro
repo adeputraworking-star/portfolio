@@ -386,6 +386,10 @@
         this.element.classList.add('hidden');
       }
       this.stopTyping();
+      // Stop voice when bubble is hidden
+      if (window.soundManager) {
+        window.soundManager.stopSpeaking();
+      }
     },
 
     async typeMessage(message: string, speed = 30) {
@@ -394,6 +398,11 @@
       this.stopTyping();
       this.isTyping = true;
       this.textEl.textContent = '';
+
+      // Start voice narration for the message
+      if (window.soundManager) {
+        window.soundManager.speakMessage(message);
+      }
 
       let index = 0;
       let soundCounter = 0;
@@ -438,6 +447,10 @@
 
     skipTyping(fullMessage: string) {
       this.stopTyping();
+      // Stop voice when user skips
+      if (window.soundManager) {
+        window.soundManager.stopSpeaking();
+      }
       if (this.textEl) {
         this.textEl.textContent = fullMessage;
       }

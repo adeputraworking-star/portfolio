@@ -6,16 +6,25 @@
 interface SoundManager {
   audioContext: AudioContext | null;
   isEnabled: boolean;
+  voiceEnabled: boolean;
   volume: number;
   purrInterval: number | null;
+  speechSynth: SpeechSynthesis | null;
+  currentUtterance: SpeechSynthesisUtterance | null;
+  preferredVoice: SpeechSynthesisVoice | null;
   init: () => void;
+  initVoice: () => void;
   playTypingSound: () => void;
   playMeow: () => void;
   playPurr: () => void;
   playSuccess: () => void;
+  speakMessage: (message: string) => void;
+  stopSpeaking: () => void;
+  addNoiseClick: (ctx: AudioContext, time: number) => void;
   startAmbientPurr: () => void;
   stopAmbientPurr: () => void;
   setEnabled: (enabled: boolean) => void;
+  setVoiceEnabled: (enabled: boolean) => void;
   setVolume: (volume: number) => void;
 }
 
@@ -23,8 +32,12 @@ interface SoundManager {
 const soundManager: SoundManager = {
   audioContext: null,
   isEnabled: true,
+  voiceEnabled: true,
   volume: 0.5,
   purrInterval: null,
+  speechSynth: null,
+  currentUtterance: null,
+  preferredVoice: null,
 
   init() {
     // Create AudioContext on first user interaction
@@ -35,6 +48,69 @@ const soundManager: SoundManager = {
         console.warn('Web Audio API not supported');
         this.isEnabled = false;
       }
+    }
+    // Initialize voice synthesis
+    this.initVoice();
+  },
+
+  initVoice() {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      console.warn('Speech synthesis not supported');
+      this.voiceEnabled = false;
+      return;
+    }
+
+    this.speechSynth = window.speechSynthesis;
+
+    // Find a cute/feminine voice
+    const findCuteVoice = () => {
+      const voices = this.speechSynth?.getVoices() || [];
+
+      // Preferred voice names for a cute assistant (prioritized)
+      const cuteVoiceNames = [
+        'Samantha', // macOS - cute female voice
+        'Karen',    // macOS AU
+        'Moira',    // macOS IE
+        'Tessa',    // macOS ZA
+        'Microsoft Zira', // Windows
+        'Google UK English Female',
+        'Google US English Female',
+        'Amelie',   // French but cute
+        'Kyoko',    // Japanese
+      ];
+
+      // Try to find a preferred cute voice
+      for (const name of cuteVoiceNames) {
+        const voice = voices.find(v => v.name.includes(name));
+        if (voice) {
+          this.preferredVoice = voice;
+          return;
+        }
+      }
+
+      // Fallback: find any female-sounding or high-quality voice
+      const femaleVoice = voices.find(v =>
+        v.name.toLowerCase().includes('female') ||
+        v.name.toLowerCase().includes('woman') ||
+        /samantha|karen|zira|amelie|alice|emma|amy|joanna/i.test(v.name)
+      );
+
+      if (femaleVoice) {
+        this.preferredVoice = femaleVoice;
+        return;
+      }
+
+      // Last resort: use first available voice
+      if (voices.length > 0) {
+        this.preferredVoice = voices[0];
+      }
+    };
+
+    // Voices might load async
+    if (this.speechSynth.getVoices().length > 0) {
+      findCuteVoice();
+    } else {
+      this.speechSynth.addEventListener('voiceschanged', findCuteVoice);
     }
   },
 
@@ -287,6 +363,41 @@ const soundManager: SoundManager = {
     });
   },
 
+  speakMessage(message: string) {
+    if (!this.voiceEnabled || !this.speechSynth) return;
+
+    // Stop any current speech
+    this.stopSpeaking();
+
+    // Clean up the message for natural speech
+    const cleanMessage = message
+      .replace(/[*_~`]/g, '') // Remove markdown formatting
+      .replace(/\s+/g, ' ')    // Normalize whitespace
+      .trim();
+
+    const utterance = new SpeechSynthesisUtterance(cleanMessage);
+
+    // Configure for a cute voice
+    if (this.preferredVoice) {
+      utterance.voice = this.preferredVoice;
+    }
+
+    // Cute voice settings: higher pitch, slightly faster, friendly tone
+    utterance.pitch = 1.3;    // Higher pitch for cuteness (0.1 to 2)
+    utterance.rate = 1.05;    // Slightly faster for energy (0.1 to 10)
+    utterance.volume = this.volume * 1.5; // Match volume setting
+
+    this.currentUtterance = utterance;
+    this.speechSynth.speak(utterance);
+  },
+
+  stopSpeaking() {
+    if (this.speechSynth) {
+      this.speechSynth.cancel();
+    }
+    this.currentUtterance = null;
+  },
+
   startAmbientPurr() {
     if (this.purrInterval) return; // Already running
 
@@ -319,6 +430,14 @@ const soundManager: SoundManager = {
     this.isEnabled = enabled;
     if (!enabled) {
       this.stopAmbientPurr();
+      this.stopSpeaking();
+    }
+  },
+
+  setVoiceEnabled(enabled: boolean) {
+    this.voiceEnabled = enabled;
+    if (!enabled) {
+      this.stopSpeaking();
     }
   },
 

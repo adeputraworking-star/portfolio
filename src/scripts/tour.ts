@@ -704,16 +704,24 @@ declare global {
     soundManager: {
       audioContext: AudioContext | null;
       isEnabled: boolean;
+      voiceEnabled: boolean;
       volume: number;
       purrInterval: number | null;
+      speechSynth: SpeechSynthesis | null;
+      currentUtterance: SpeechSynthesisUtterance | null;
+      preferredVoice: SpeechSynthesisVoice | null;
       init: () => void;
+      initVoice: () => void;
       playTypingSound: () => void;
       playMeow: () => void;
       playPurr: () => void;
       playSuccess: () => void;
+      speakMessage: (message: string) => void;
+      stopSpeaking: () => void;
       startAmbientPurr: () => void;
       stopAmbientPurr: () => void;
       setEnabled: (enabled: boolean) => void;
+      setVoiceEnabled: (enabled: boolean) => void;
       setVolume: (volume: number) => void;
     };
     portfolioTour: {

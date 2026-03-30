@@ -1,7 +1,53 @@
 /**
  * Sound Manager for Portfolio Tour
  * Uses Web Audio API to generate retro typing sounds
+ * Includes SpeechRecognition for voice input and per-cat voice TTS
  */
+
+// Per-cat voice configurations - each cat gets a unique voice personality
+interface CatVoiceConfig {
+  pitch: number;
+  rate: number;
+  voicePreference: string[]; // Preferred voice names in priority order
+}
+
+const catVoiceConfigs: Record<string, CatVoiceConfig> = {
+  Neko:    { pitch: 1.3, rate: 1.05, voicePreference: ['Samantha', 'Karen'] },
+  Mochi:   { pitch: 1.5, rate: 1.1,  voicePreference: ['Tessa', 'Moira'] },
+  Yuki:    { pitch: 1.4, rate: 0.95, voicePreference: ['Kyoko', 'Amelie'] },
+  Shadow:  { pitch: 0.8, rate: 0.9,  voicePreference: ['Daniel', 'Alex', 'Microsoft David'] },
+  Patches: { pitch: 1.2, rate: 1.15, voicePreference: ['Karen', 'Samantha'] },
+  Splash:  { pitch: 1.6, rate: 1.2,  voicePreference: ['Moira', 'Tessa'] },
+  Pixel:   { pitch: 1.1, rate: 1.0,  voicePreference: ['Amelie', 'Samantha'] },
+};
+
+// SpeechRecognition types for browsers
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message?: string;
+}
+
+interface SpeechRecognitionInstance extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  onstart: (() => void) | null;
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognitionInstance;
+}
 
 interface SoundManager {
   audioContext: AudioContext | null;
@@ -12,6 +58,9 @@ interface SoundManager {
   speechSynth: SpeechSynthesis | null;
   currentUtterance: SpeechSynthesisUtterance | null;
   preferredVoice: SpeechSynthesisVoice | null;
+  currentCatName: string;
+  recognition: SpeechRecognitionInstance | null;
+  isListening: boolean;
   init: () => void;
   initVoice: () => void;
   playTypingSound: () => void;
@@ -19,6 +68,7 @@ interface SoundManager {
   playPurr: () => void;
   playSuccess: () => void;
   speakMessage: (message: string) => void;
+  speakAsChat: (message: string, catName?: string) => Promise<void>;
   stopSpeaking: () => void;
   addNoiseClick: (ctx: AudioContext, time: number) => void;
   startAmbientPurr: () => void;
@@ -26,6 +76,10 @@ interface SoundManager {
   setEnabled: (enabled: boolean) => void;
   setVoiceEnabled: (enabled: boolean) => void;
   setVolume: (volume: number) => void;
+  setCatVoice: (catName: string) => void;
+  startListening: (onResult: (text: string) => void, onError?: (error: string) => void) => void;
+  stopListening: () => void;
+  isSpeechRecognitionSupported: () => boolean;
 }
 
 // Create the sound manager
@@ -38,6 +92,9 @@ const soundManager: SoundManager = {
   speechSynth: null,
   currentUtterance: null,
   preferredVoice: null,
+  currentCatName: 'Neko',
+  recognition: null,
+  isListening: false,
 
   init() {
     // Create AudioContext on first user interaction
@@ -62,24 +119,27 @@ const soundManager: SoundManager = {
 
     this.speechSynth = window.speechSynthesis;
 
-    // Find a cute/feminine voice
-    const findCuteVoice = () => {
+    // Find a voice matching the current cat's preferences
+    const findVoiceForCat = () => {
       const voices = this.speechSynth?.getVoices() || [];
+      const config = catVoiceConfigs[this.currentCatName] || catVoiceConfigs['Neko'];
 
-      // Preferred voice names for a cute assistant (prioritized)
+      // Try cat-specific preferred voices first
+      for (const name of config.voicePreference) {
+        const voice = voices.find(v => v.name.includes(name));
+        if (voice) {
+          this.preferredVoice = voice;
+          return;
+        }
+      }
+
+      // Fallback: general cute voice search
       const cuteVoiceNames = [
-        'Samantha', // macOS - cute female voice
-        'Karen',    // macOS AU
-        'Moira',    // macOS IE
-        'Tessa',    // macOS ZA
-        'Microsoft Zira', // Windows
-        'Google UK English Female',
-        'Google US English Female',
-        'Amelie',   // French but cute
-        'Kyoko',    // Japanese
+        'Samantha', 'Karen', 'Moira', 'Tessa',
+        'Microsoft Zira', 'Google UK English Female',
+        'Google US English Female', 'Amelie', 'Kyoko',
       ];
 
-      // Try to find a preferred cute voice
       for (const name of cuteVoiceNames) {
         const voice = voices.find(v => v.name.includes(name));
         if (voice) {
@@ -88,7 +148,7 @@ const soundManager: SoundManager = {
         }
       }
 
-      // Fallback: find any female-sounding or high-quality voice
+      // Fallback: any female-sounding voice
       const femaleVoice = voices.find(v =>
         v.name.toLowerCase().includes('female') ||
         v.name.toLowerCase().includes('woman') ||
@@ -108,9 +168,26 @@ const soundManager: SoundManager = {
 
     // Voices might load async
     if (this.speechSynth.getVoices().length > 0) {
-      findCuteVoice();
+      findVoiceForCat();
     } else {
-      this.speechSynth.addEventListener('voiceschanged', findCuteVoice);
+      this.speechSynth.addEventListener('voiceschanged', () => findVoiceForCat());
+    }
+  },
+
+  setCatVoice(catName: string) {
+    this.currentCatName = catName;
+    // Re-select voice for the new cat
+    if (this.speechSynth) {
+      const voices = this.speechSynth.getVoices();
+      const config = catVoiceConfigs[catName] || catVoiceConfigs['Neko'];
+
+      for (const name of config.voicePreference) {
+        const voice = voices.find(v => v.name.includes(name));
+        if (voice) {
+          this.preferredVoice = voice;
+          return;
+        }
+      }
     }
   },
 
@@ -304,14 +381,12 @@ const soundManager: SoundManager = {
     mainGain.gain.linearRampToValueAtTime(this.volume * 1.2, now + 0.1);
 
     // Create the "purr-purr" rhythm with amplitude modulation
-    // Cat purrs have a rhythmic inhale/exhale pattern ~25 cycles per second
     const purrRate = 22; // Hz - the rumbling frequency
     const purrCycles = Math.floor(duration * purrRate);
     const cycleLength = 1 / purrRate;
 
     for (let i = 0; i < purrCycles; i++) {
       const cycleStart = now + i * cycleLength;
-      // Each cycle: quick rise, sustain, quick fall
       mainGain.gain.setValueAtTime(this.volume * 0.4, cycleStart);
       mainGain.gain.linearRampToValueAtTime(this.volume * 1.2, cycleStart + cycleLength * 0.3);
       mainGain.gain.linearRampToValueAtTime(this.volume * 0.4, cycleStart + cycleLength * 0.9);
@@ -377,18 +452,58 @@ const soundManager: SoundManager = {
 
     const utterance = new SpeechSynthesisUtterance(cleanMessage);
 
-    // Configure for a cute voice
+    // Apply per-cat voice settings
+    const config = catVoiceConfigs[this.currentCatName] || catVoiceConfigs['Neko'];
+
     if (this.preferredVoice) {
       utterance.voice = this.preferredVoice;
     }
 
-    // Cute voice settings: higher pitch, slightly faster, friendly tone
-    utterance.pitch = 1.3;    // Higher pitch for cuteness (0.1 to 2)
-    utterance.rate = 1.05;    // Slightly faster for energy (0.1 to 10)
-    utterance.volume = this.volume * 1.5; // Match volume setting
+    utterance.pitch = config.pitch;
+    utterance.rate = config.rate;
+    utterance.volume = Math.min(this.volume * 1.5, 1);
 
     this.currentUtterance = utterance;
     this.speechSynth.speak(utterance);
+  },
+
+  speakAsChat(message: string, catName?: string): Promise<void> {
+    return new Promise((resolve) => {
+      if (!this.voiceEnabled || !this.speechSynth) {
+        resolve();
+        return;
+      }
+
+      this.stopSpeaking();
+
+      const cleanMessage = message
+        .replace(/[*_~`]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (!cleanMessage) {
+        resolve();
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(cleanMessage);
+      const name = catName || this.currentCatName;
+      const config = catVoiceConfigs[name] || catVoiceConfigs['Neko'];
+
+      if (this.preferredVoice) {
+        utterance.voice = this.preferredVoice;
+      }
+
+      utterance.pitch = config.pitch;
+      utterance.rate = config.rate;
+      utterance.volume = Math.min(this.volume * 1.5, 1);
+
+      utterance.onend = () => resolve();
+      utterance.onerror = () => resolve();
+
+      this.currentUtterance = utterance;
+      this.speechSynth.speak(utterance);
+    });
   },
 
   stopSpeaking() {
@@ -443,7 +558,78 @@ const soundManager: SoundManager = {
 
   setVolume(volume: number) {
     this.volume = Math.max(0, Math.min(1, volume));
-  }
+  },
+
+  isSpeechRecognitionSupported(): boolean {
+    return !!(
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition
+    );
+  },
+
+  startListening(onResult: (text: string) => void, onError?: (error: string) => void) {
+    if (this.isListening) {
+      this.stopListening();
+    }
+
+    const SpeechRecognitionAPI: SpeechRecognitionConstructor | undefined =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionAPI) {
+      onError?.('Speech recognition not supported in this browser');
+      return;
+    }
+
+    try {
+      this.recognition = new SpeechRecognitionAPI();
+      this.recognition.continuous = false;
+      this.recognition.interimResults = false;
+      this.recognition.lang = 'en-US';
+
+      this.recognition.onstart = () => {
+        this.isListening = true;
+      };
+
+      this.recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const last = event.results.length - 1;
+        const transcript = event.results[last][0].transcript.trim();
+        if (transcript) {
+          onResult(transcript);
+        }
+      };
+
+      this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        this.isListening = false;
+        if (event.error !== 'aborted') {
+          onError?.(event.error === 'not-allowed'
+            ? 'Microphone permission denied'
+            : `Speech recognition error: ${event.error}`
+          );
+        }
+      };
+
+      this.recognition.onend = () => {
+        this.isListening = false;
+      };
+
+      this.recognition.start();
+    } catch (err) {
+      this.isListening = false;
+      onError?.('Failed to start speech recognition');
+    }
+  },
+
+  stopListening() {
+    if (this.recognition) {
+      try {
+        this.recognition.abort();
+      } catch {
+        // Already stopped
+      }
+      this.recognition = null;
+    }
+    this.isListening = false;
+  },
 };
 
 // Export to window for global access
@@ -456,3 +642,4 @@ declare global {
 window.soundManager = soundManager;
 
 export { soundManager };
+export type { SoundManager };

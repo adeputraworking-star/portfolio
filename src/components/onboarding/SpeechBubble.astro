@@ -1,5 +1,5 @@
 ---
-// SpeechBubble.astro - Terminal-styled chat bubble with typewriter effect
+// SpeechBubble.astro - Terminal-styled chat bubble with typewriter effect + chat mode
 ---
 
 <div id="speech-bubble" class="speech-bubble hidden" role="dialog" aria-label="Tour guide message">
@@ -11,7 +11,7 @@
         <span class="dot dot-yellow"></span>
         <span class="dot dot-green"></span>
       </div>
-      <span class="bubble-title">neko@guide:~$</span>
+      <span id="bubble-title" class="bubble-title">neko@guide:~$</span>
     </div>
 
     <!-- Message content -->
@@ -22,8 +22,8 @@
       </div>
     </div>
 
-    <!-- Controls -->
-    <div class="bubble-controls">
+    <!-- Tour Controls (shown during tour) -->
+    <div id="tour-controls" class="bubble-controls">
       <button id="tour-prev" class="tour-btn tour-btn-secondary" aria-label="Previous step">
         <span class="btn-bracket">[</span>
         <span class="btn-text">PREV</span>
@@ -45,16 +45,61 @@
       </button>
     </div>
 
+    <!-- Chat Controls (shown in chat mode) -->
+    <div id="chat-controls" class="bubble-controls chat-controls hidden">
+      <div class="chat-input-wrapper">
+        <span class="chat-prompt">></span>
+        <input
+          id="chat-input"
+          type="text"
+          class="chat-input"
+          placeholder="Ask me anything..."
+          maxlength="500"
+          autocomplete="off"
+        />
+        <button id="chat-mic-btn" class="tour-btn chat-mic-btn" aria-label="Voice input" title="Hold to speak">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
+        <button id="chat-send-btn" class="tour-btn tour-btn-primary chat-send-btn" aria-label="Send message">
+          <span class="btn-bracket">[</span>
+          <span class="btn-text">SEND</span>
+          <span class="btn-bracket">]</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Keyboard hints (desktop only) -->
-    <div class="keyboard-hints">
+    <div id="keyboard-hints" class="keyboard-hints">
       <span class="hint">Enter: Next</span>
       <span class="hint-separator">|</span>
       <span class="hint">Esc: Skip</span>
     </div>
 
+    <!-- Chat keyboard hints -->
+    <div id="chat-hints" class="keyboard-hints hidden">
+      <span class="hint">Enter: Send</span>
+      <span class="hint-separator">|</span>
+      <span class="hint">Click cat to restart tour</span>
+    </div>
+
     <!-- Arrow pointing to cat -->
     <div class="bubble-arrow"></div>
   </div>
+</div>
+
+<!-- Floating mic button (visible when chat mode available, bubble hidden) -->
+<div id="chat-fab" class="chat-fab hidden" aria-label="Ask the cat guide a question" title="Ask me anything!">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+    <line x1="12" y1="19" x2="12" y2="23"/>
+    <line x1="8" y1="23" x2="16" y2="23"/>
+  </svg>
 </div>
 
 <style>
@@ -122,6 +167,8 @@
   .bubble-body {
     padding: 16px;
     min-height: 60px;
+    max-height: 200px;
+    overflow-y: auto;
   }
 
   .bubble-message {
@@ -153,6 +200,10 @@
     gap: 12px;
     padding: 12px 16px;
     border-top: 1px solid var(--color-terminal-border, #333);
+  }
+
+  .bubble-controls.hidden {
+    display: none;
   }
 
   .tour-btn {
@@ -233,6 +284,80 @@
     color: var(--color-terminal-cyan, #00ffff);
   }
 
+  /* === Chat Controls === */
+  .chat-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chat-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .chat-prompt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--color-terminal-green, #00ff00);
+    flex-shrink: 0;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-terminal-border, #333);
+    color: var(--color-terminal-green, #00ff00);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 4px 0;
+    outline: none;
+    min-width: 0;
+  }
+
+  .chat-input::placeholder {
+    color: var(--color-terminal-muted, #666);
+    font-style: italic;
+  }
+
+  .chat-input:focus {
+    border-bottom-color: var(--color-terminal-green, #00ff00);
+  }
+
+  .chat-mic-btn {
+    color: var(--color-terminal-cyan, #00ffff);
+    flex-shrink: 0;
+    padding: 6px;
+    border-radius: 50%;
+  }
+
+  .chat-mic-btn:hover {
+    background: rgba(0, 255, 255, 0.15);
+  }
+
+  .chat-mic-btn.listening {
+    color: #ff4444;
+    animation: mic-pulse 1s ease-in-out infinite;
+    background: rgba(255, 68, 68, 0.15);
+  }
+
+  .chat-mic-btn.unsupported {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  @keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(255, 68, 68, 0); }
+  }
+
+  .chat-send-btn {
+    flex-shrink: 0;
+  }
+
   /* Keyboard hints */
   .keyboard-hints {
     display: flex;
@@ -243,6 +368,10 @@
     font-size: 10px;
     color: var(--color-terminal-muted, #666);
     border-top: 1px solid rgba(51, 51, 51, 0.5);
+  }
+
+  .keyboard-hints.hidden {
+    display: none;
   }
 
   .hint-separator {
@@ -295,6 +424,49 @@
     padding: 12px 16px;
   }
 
+  /* === Floating Action Button (mic) === */
+  .chat-fab {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    z-index: 10001;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(10, 10, 10, 0.9);
+    border: 1px solid var(--color-terminal-cyan, #00ffff);
+    color: var(--color-terminal-cyan, #00ffff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+  }
+
+  .chat-fab:hover {
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+    transform: scale(1.1);
+  }
+
+  .chat-fab.hidden {
+    opacity: 0;
+    transform: scale(0.5);
+    pointer-events: none;
+  }
+
+  .chat-fab.listening {
+    border-color: #ff4444;
+    color: #ff4444;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+    animation: fab-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes fab-pulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(255, 68, 68, 0.3); }
+    50% { box-shadow: 0 0 30px rgba(255, 68, 68, 0.5); }
+  }
+
   /* Mobile adjustments */
   @media (max-width: 768px) {
     .speech-bubble {
@@ -335,6 +507,11 @@
       min-width: 100%;
       max-width: 100%;
     }
+
+    .chat-fab {
+      bottom: 85px;
+      right: 15px;
+    }
   }
 
   /* Reduced motion */
@@ -347,11 +524,19 @@
       animation: none;
       opacity: 1;
     }
+
+    .chat-mic-btn.listening {
+      animation: none;
+    }
+
+    .chat-fab.listening {
+      animation: none;
+    }
   }
 </style>
 
 <script>
-  // Speech bubble controller with typewriter effect
+  // Speech bubble controller with typewriter effect + chat mode
   window.speechBubble = {
     element: null,
     messageEl: null,
@@ -361,6 +546,7 @@
     totalSteps: 11,
     isTyping: false,
     typeInterval: null,
+    mode: 'tour' as 'tour' | 'chat',
 
     init() {
       this.element = document.getElementById('speech-bubble');
@@ -368,6 +554,12 @@
       this.textEl = this.messageEl?.querySelector('.message-text');
       this.cursorEl = this.messageEl?.querySelector('.cursor');
       this.updateProgress();
+
+      // Check speech recognition support for mic buttons
+      const micBtn = document.getElementById('chat-mic-btn');
+      if (micBtn && window.soundManager && !window.soundManager.isSpeechRecognitionSupported()) {
+        micBtn.classList.add('unsupported');
+      }
     },
 
     show(welcomeMode = false) {
@@ -389,6 +581,33 @@
       // Stop voice when bubble is hidden
       if (window.soundManager) {
         window.soundManager.stopSpeaking();
+      }
+    },
+
+    setMode(mode: 'tour' | 'chat') {
+      this.mode = mode;
+      const tourControls = document.getElementById('tour-controls');
+      const chatControls = document.getElementById('chat-controls');
+      const tourHints = document.getElementById('keyboard-hints');
+      const chatHints = document.getElementById('chat-hints');
+
+      if (mode === 'chat') {
+        tourControls?.classList.add('hidden');
+        chatControls?.classList.remove('hidden');
+        tourHints?.classList.add('hidden');
+        chatHints?.classList.remove('hidden');
+      } else {
+        tourControls?.classList.remove('hidden');
+        chatControls?.classList.add('hidden');
+        tourHints?.classList.remove('hidden');
+        chatHints?.classList.add('hidden');
+      }
+    },
+
+    setTitle(title: string) {
+      const titleEl = document.getElementById('bubble-title');
+      if (titleEl) {
+        titleEl.textContent = title;
       }
     },
 
@@ -434,6 +653,23 @@
     setMessage(message: string) {
       if (this.textEl) {
         this.textEl.textContent = message;
+      }
+    },
+
+    appendText(text: string) {
+      if (this.textEl) {
+        this.textEl.textContent += text;
+        // Auto-scroll the bubble body
+        const body = this.textEl.closest('.bubble-body');
+        if (body) {
+          body.scrollTop = body.scrollHeight;
+        }
+      }
+    },
+
+    clearMessage() {
+      if (this.textEl) {
+        this.textEl.textContent = '';
       }
     },
 

@@ -88,6 +88,11 @@
 
       <!-- Waving Paw (hidden by default) -->
       <div class="waving-paw"></div>
+
+      <!-- Thinking Paw (paw on chin, hidden by default) -->
+      <div class="thinking-paw">
+        <div class="paw-finger"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -347,7 +352,9 @@
   .cat-character[data-animation="waving"] .eyelid,
   .cat-character[data-animation="typing"] .eyelid,
   .cat-character[data-animation="pointing"] .eyelid,
-  .cat-character[data-animation="celebrating"] .eyelid {
+  .cat-character[data-animation="celebrating"] .eyelid,
+  .cat-character[data-animation="listening"] .eyelid,
+  .cat-character[data-animation="thinking"] .eyelid {
     height: 0% !important;
     animation: none;
   }
@@ -603,6 +610,119 @@
     50% { transform: translateY(-10px) rotate(2deg); }
   }
 
+  /* === LISTENING Animation === */
+  /* Ears perked, eyes wide with bright glow, subtle attentive sway */
+  .cat-character[data-animation="listening"] {
+    animation: listening-sway 1.5s ease-in-out infinite;
+  }
+
+  .cat-character[data-animation="listening"] .ear-left {
+    transform: rotate(-5deg);
+    transition: transform 0.3s ease;
+  }
+
+  .cat-character[data-animation="listening"] .ear-right {
+    transform: rotate(5deg);
+    transition: transform 0.3s ease;
+  }
+
+  .cat-character[data-animation="listening"] .pupil {
+    width: 8px;
+    height: 10px;
+    animation: listening-eye-pulse 1s ease-in-out infinite;
+  }
+
+  .cat-character[data-animation="listening"] .cat-head {
+    animation: listening-head-tilt 2s ease-in-out infinite;
+  }
+
+  @keyframes listening-sway {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+
+  @keyframes listening-eye-pulse {
+    0%, 100% { box-shadow: 0 0 8px #00ff00, 0 0 16px #00ff00, 0 0 24px rgba(0, 255, 0, 0.3); }
+    50% { box-shadow: 0 0 12px #00ff00, 0 0 24px #00ff00, 0 0 36px rgba(0, 255, 0, 0.5); }
+  }
+
+  @keyframes listening-head-tilt {
+    0%, 100% { transform: translateX(-50%) rotate(0deg); }
+    25% { transform: translateX(-50%) rotate(5deg); }
+    75% { transform: translateX(-50%) rotate(-5deg); }
+  }
+
+  /* === THINKING Animation === */
+  /* Paw on chin, head tilted, contemplative look */
+  .cat-character[data-animation="thinking"] {
+    animation: thinking-bob 2s ease-in-out infinite;
+  }
+
+  .cat-character[data-animation="thinking"] .cat-head {
+    animation: thinking-head 3s ease-in-out infinite;
+  }
+
+  .cat-character[data-animation="thinking"] .pupil {
+    animation: thinking-eyes 3s ease-in-out infinite;
+  }
+
+  .cat-character[data-animation="thinking"] .thinking-paw {
+    opacity: 1;
+    animation: thinking-paw-tap 2s ease-in-out infinite;
+  }
+
+  .cat-character[data-animation="thinking"] .paw-right {
+    opacity: 0;
+  }
+
+  @keyframes thinking-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+
+  @keyframes thinking-head {
+    0%, 100% { transform: translateX(-50%) rotate(-5deg); }
+    50% { transform: translateX(-50%) rotate(-3deg); }
+  }
+
+  @keyframes thinking-eyes {
+    0%, 100% {
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 6px #00ff00, 0 0 10px #00ff00;
+    }
+    25% {
+      transform: translate(-30%, -50%);
+      box-shadow: 0 0 8px #00ff00, 0 0 14px #00ff00;
+    }
+    75% {
+      transform: translate(-70%, -50%);
+      box-shadow: 0 0 8px #00ff00, 0 0 14px #00ff00;
+    }
+  }
+
+  @keyframes thinking-paw-tap {
+    0%, 100% { transform: rotate(15deg) translateY(0); }
+    50% { transform: rotate(15deg) translateY(-2px); }
+  }
+
+  /* Thinking Paw (positioned near chin) */
+  .thinking-paw {
+    position: absolute;
+    top: 25px;
+    right: -18px;
+    width: 16px;
+    height: 20px;
+    opacity: 0;
+    transform: rotate(15deg);
+    transition: opacity 0.3s ease;
+    z-index: 3;
+  }
+
+  .thinking-paw .paw-finger {
+    width: 16px;
+    height: 20px;
+  }
+
   /* Idle breathing animation - slow and sleepy */
   .cat-character[data-animation="idle"] {
     animation: idle-sleepy 4s ease-in-out infinite;
@@ -791,7 +911,7 @@
       this.setColor(getColorForPage());
     },
 
-    setAnimation(animation: 'idle' | 'waving' | 'typing' | 'pointing' | 'celebrating') {
+    setAnimation(animation: 'idle' | 'waving' | 'typing' | 'pointing' | 'celebrating' | 'listening' | 'thinking') {
       if (this.character) {
         this.character.dataset.animation = animation;
       }

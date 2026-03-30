@@ -1,14 +1,15 @@
 /**
  * Portfolio Tour - State Machine & Logic
  *
- * Manages the guided tour experience with Neko the cat hacker
+ * Manages the guided tour experience with cat guides
+ * AND the "Ask Me Anything" chat mode post-tour
  */
 
 // Types
 interface TourStep {
   id: string;
   target: string | null; // CSS selector or null for fullscreen
-  animation: 'idle' | 'waving' | 'typing' | 'pointing' | 'celebrating';
+  animation: 'idle' | 'waving' | 'typing' | 'pointing' | 'celebrating' | 'listening' | 'thinking';
   message: string;
   welcomeMode?: boolean;
   navigateTo?: string; // URL to navigate to on next step
@@ -22,6 +23,13 @@ interface TourState {
   hasCompleted: boolean;
 }
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+type ChatState = 'idle' | 'listening' | 'thinking' | 'speaking';
+
 // Constants
 const STORAGE_KEY = 'portfolio_tour_v1';
 const TOUR_STEP_KEY = 'portfolio_tour_step';
@@ -29,6 +37,7 @@ const TOUR_ACTIVE_KEY = 'portfolio_tour_active';
 const TYPING_SPEED = 25; // ms per character
 const HOME_PATH = '/';
 const TOUR_PARAM = 'start-tour';
+const MAX_CHAT_HISTORY = 10;
 
 // Page navigation order
 const pageOrder = ['/', '/about', '/skills', '/projects', '/experience', '/contact', '/blog'];
@@ -37,7 +46,7 @@ const pageOrder = ['/', '/about', '/skills', '/projects', '/experience', '/conta
 function getNextPage(currentPage: string): string | null {
   const currentIndex = pageOrder.indexOf(currentPage);
   if (currentIndex === -1 || currentIndex >= pageOrder.length - 1) {
-    return null; // No next page
+    return null;
   }
   return pageOrder[currentIndex + 1];
 }
@@ -294,7 +303,7 @@ const pageTours: Record<string, TourStep[]> = {
       id: 'complete',
       target: null,
       animation: 'celebrating',
-      message: "Tour complete! You've met all 7 cats! Feel free to explore anytime! 🐱",
+      message: "Tour complete! You've met all 7 cats! Feel free to ask me anything - click the mic button!",
       welcomeMode: true,
       page: '/blog',
     },
@@ -316,6 +325,12 @@ const state: TourState = {
   isTyping: false,
   hasCompleted: false,
 };
+
+// Chat state
+let chatState: ChatState = 'idle';
+let chatHistory: ChatMessage[] = [];
+let chatModeActive = false;
+let currentAbortController: AbortController | null = null;
 
 // Check if tour was completed before
 function hasCompletedTour(): boolean {
@@ -352,11 +367,15 @@ function isHomePage(): boolean {
 // Get current page path (normalized)
 function getCurrentPage(): string {
   const path = window.location.pathname;
-  // Normalize paths like /about/ to /about
   if (path.endsWith('/') && path !== '/') {
     return path.slice(0, -1);
   }
   return path;
+}
+
+// Get cat name for current page
+function getCurrentCatName(): string {
+  return catNames[getCurrentPage()] || 'Neko';
 }
 
 // Check if URL has tour start parameter
@@ -398,18 +417,6 @@ function clearSavedTourStep(): void {
   } catch {
     // localStorage not available
   }
-}
-
-// Check if current step matches current page
-function isStepOnCurrentPage(step: TourStep): boolean {
-  const currentPage = getCurrentPage();
-  const stepPage = step.page || '/';
-
-  // Normalize for comparison
-  const normalizedCurrent = currentPage === '' ? '/' : currentPage;
-  const normalizedStep = stepPage === '' ? '/' : stepPage;
-
-  return normalizedCurrent === normalizedStep;
 }
 
 // Get current step data
@@ -505,7 +512,7 @@ async function prevStep(): Promise<void> {
 
 // Skip/end tour
 function skipTour(): void {
-  setTourActive(false); // Stop multi-page tour
+  setTourActive(false);
   completeTour();
 }
 
@@ -515,7 +522,7 @@ function completeTour(): void {
   state.hasCompleted = true;
   markTourCompleted();
   clearSavedTourStep();
-  setTourActive(false); // Clear multi-page tour state
+  setTourActive(false);
 
   // Play success sound
   if (window.soundManager) {
@@ -535,44 +542,346 @@ function completeTour(): void {
   if (window.catGuide) {
     window.catGuide.setAnimation('idle');
   }
+
+  // Enable chat mode after a brief delay
+  setTimeout(() => {
+    enableChatMode();
+  }, 1000);
 }
 
-// Start the tour
-async function startTour(): Promise<void> {
-  // Initialize sound manager on tour start (requires user interaction)
+// ===========================
+// CHAT MODE ("Ask Me Anything")
+// ===========================
+
+function enableChatMode(): void {
+  chatModeActive = true;
+  chatHistory = [];
+
+  // Show the floating mic button
+  const fab = document.getElementById('chat-fab');
+  if (fab) {
+    fab.classList.remove('hidden');
+  }
+}
+
+function disableChatMode(): void {
+  chatModeActive = false;
+  chatState = 'idle';
+
+  // Hide FAB
+  const fab = document.getElementById('chat-fab');
+  if (fab) {
+    fab.classList.add('hidden');
+  }
+
+  // Stop any ongoing processes
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
+
   if (window.soundManager) {
-    window.soundManager.init();
-    window.soundManager.playMeow();
-    window.soundManager.startAmbientPurr();
+    window.soundManager.stopListening();
+    window.soundManager.stopSpeaking();
+  }
+}
+
+function openChatBubble(): void {
+  if (!window.speechBubble || !window.catGuide) return;
+
+  const catName = getCurrentCatName();
+
+  // Configure speech bubble for chat mode
+  window.speechBubble.setMode('chat');
+  window.speechBubble.setTitle(`${catName.toLowerCase()}@chat:~$`);
+  window.speechBubble.clearMessage();
+  window.speechBubble.show(false);
+
+  // Show cat
+  window.catGuide.show();
+  window.catGuide.setAnimation('idle');
+
+  // Set cat voice
+  if (window.soundManager) {
+    window.soundManager.setCatVoice(catName);
   }
 
-  // Load tour steps for current page
-  loadTourForCurrentPage();
+  // Hide FAB while bubble is open
+  const fab = document.getElementById('chat-fab');
+  if (fab) {
+    fab.classList.add('hidden');
+  }
 
-  state.currentStep = 0;
-  state.isActive = true;
-  state.hasCompleted = false;
+  // Focus the input
+  const input = document.getElementById('chat-input') as HTMLInputElement;
+  if (input) {
+    setTimeout(() => input.focus(), 300);
+  }
 
-  // Mark tour as active for multi-page navigation
-  setTourActive(true);
+  // Show greeting if no history
+  if (chatHistory.length === 0) {
+    window.speechBubble.setMessage(`Meow! I'm ${catName}. Ask me anything about Ade's portfolio!`);
+  }
+}
 
-  // Show cat with entrance animation
+function closeChatBubble(): void {
+  if (window.speechBubble) {
+    window.speechBubble.hide();
+  }
+
   if (window.catGuide) {
-    window.catGuide.show();
+    window.catGuide.setAnimation('idle');
   }
 
-  // Render first step
-  await renderStep();
+  // Show FAB again
+  if (chatModeActive) {
+    const fab = document.getElementById('chat-fab');
+    if (fab) {
+      fab.classList.remove('hidden');
+    }
+  }
+
+  // Cancel ongoing request
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
+
+  if (window.soundManager) {
+    window.soundManager.stopListening();
+    window.soundManager.stopSpeaking();
+  }
+
+  chatState = 'idle';
 }
 
-// Restart tour (works on any page now!)
-async function restartTour(): Promise<void> {
-  await startTour();
+async function sendChatMessage(userMessage: string): Promise<void> {
+  if (!userMessage.trim() || chatState === 'thinking' || chatState === 'speaking') return;
+
+  const catName = getCurrentCatName();
+
+  // Add to history
+  chatHistory.push({ role: 'user', content: userMessage.trim() });
+
+  // Trim history to prevent token bloat
+  if (chatHistory.length > MAX_CHAT_HISTORY) {
+    chatHistory = chatHistory.slice(-MAX_CHAT_HISTORY);
+  }
+
+  // Clear input
+  const input = document.getElementById('chat-input') as HTMLInputElement;
+  if (input) {
+    input.value = '';
+    input.disabled = true;
+  }
+
+  // Transition to thinking state
+  chatState = 'thinking';
+  if (window.catGuide) {
+    window.catGuide.setAnimation('thinking');
+  }
+  if (window.speechBubble) {
+    window.speechBubble.clearMessage();
+    window.speechBubble.setMessage('Thinking...');
+  }
+
+  // Call API
+  currentAbortController = new AbortController();
+  let fullResponse = '';
+
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: chatHistory,
+        catName: catName,
+      }),
+      signal: currentAbortController.signal,
+    });
+
+    if (!response.ok) {
+      let errorDetail = `Status ${response.status}`;
+      try {
+        const errBody = await response.json();
+        if (errBody.error) errorDetail = errBody.error;
+      } catch {
+        // Response wasn't JSON
+      }
+      throw new Error(errorDetail);
+    }
+
+    // Switch to speaking animation
+    chatState = 'speaking';
+    if (window.catGuide) {
+      window.catGuide.setAnimation('typing');
+    }
+    if (window.speechBubble) {
+      window.speechBubble.clearMessage();
+    }
+
+    // Stream the response
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    let streamError = '';
+
+    if (reader) {
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        // Keep the last potentially incomplete line in the buffer
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+
+          const data = trimmed.slice(6);
+          if (data === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.text) {
+              fullResponse += parsed.text;
+              if (window.speechBubble) {
+                window.speechBubble.appendText(parsed.text);
+              }
+            }
+            if (parsed.error) {
+              streamError = parsed.error;
+            }
+          } catch {
+            // Skip malformed JSON chunks
+          }
+        }
+      }
+    }
+
+    if (streamError && !fullResponse) {
+      throw new Error(streamError);
+    }
+
+    // Add assistant response to history
+    if (fullResponse) {
+      chatHistory.push({ role: 'assistant', content: fullResponse });
+    }
+
+    // Speak the response via TTS
+    if (fullResponse && window.soundManager) {
+      window.catGuide?.setAnimation('celebrating');
+      await window.soundManager.speakAsChat(fullResponse, catName);
+    }
+
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      // User cancelled, do nothing
+    } else {
+      console.error('Chat error:', err);
+      const errorMsg = err?.message || 'Unknown error';
+      if (window.speechBubble) {
+        window.speechBubble.clearMessage();
+        window.speechBubble.setMessage(`Meow... ${errorMsg}. Try again?`);
+      }
+    }
+  } finally {
+    currentAbortController = null;
+    chatState = 'idle';
+
+    if (window.catGuide) {
+      window.catGuide.setAnimation('idle');
+    }
+
+    // Re-enable input
+    if (input) {
+      input.disabled = false;
+      input.focus();
+    }
+  }
 }
+
+function startVoiceInput(): void {
+  if (!window.soundManager || !window.soundManager.isSpeechRecognitionSupported()) return;
+  if (chatState === 'thinking' || chatState === 'speaking') return;
+
+  chatState = 'listening';
+
+  // Update UI
+  if (window.catGuide) {
+    window.catGuide.setAnimation('listening');
+  }
+  if (window.speechBubble) {
+    window.speechBubble.clearMessage();
+    window.speechBubble.setMessage('Listening... speak now!');
+  }
+
+  // Update mic button styles
+  const micBtn = document.getElementById('chat-mic-btn');
+  const fab = document.getElementById('chat-fab');
+  micBtn?.classList.add('listening');
+  fab?.classList.add('listening');
+
+  window.soundManager.startListening(
+    // On result
+    (transcript: string) => {
+      micBtn?.classList.remove('listening');
+      fab?.classList.remove('listening');
+
+      // Show what was heard
+      const input = document.getElementById('chat-input') as HTMLInputElement;
+      if (input) {
+        input.value = transcript;
+      }
+
+      // Auto-send
+      sendChatMessage(transcript);
+    },
+    // On error
+    (error: string) => {
+      micBtn?.classList.remove('listening');
+      fab?.classList.remove('listening');
+      chatState = 'idle';
+
+      if (window.catGuide) {
+        window.catGuide.setAnimation('idle');
+      }
+      if (window.speechBubble) {
+        window.speechBubble.setMessage(error);
+      }
+    }
+  );
+}
+
+// ===========================
+// SETUP & CONTROLS
+// ===========================
 
 // Setup keyboard navigation
 function setupKeyboardNav(): void {
   document.addEventListener('keydown', (e: KeyboardEvent) => {
+    // Chat mode keyboard handling
+    if (chatModeActive && !state.isActive) {
+      const input = document.getElementById('chat-input') as HTMLInputElement;
+
+      if (e.key === 'Enter' && document.activeElement === input) {
+        e.preventDefault();
+        sendChatMessage(input.value);
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeChatBubble();
+        return;
+      }
+
+      return;
+    }
+
+    // Tour mode keyboard handling
     if (!state.isActive) return;
 
     switch (e.key) {
@@ -599,6 +908,7 @@ function setupButtonControls(): void {
   document.addEventListener('click', (e: MouseEvent) => {
     const target = e.target as HTMLElement;
 
+    // Tour controls
     if (target.closest('#tour-next')) {
       e.preventDefault();
       nextStep();
@@ -608,20 +918,116 @@ function setupButtonControls(): void {
     } else if (target.closest('#tour-skip')) {
       e.preventDefault();
       skipTour();
-    } else if (target.closest('#cat-guide') && !state.isActive) {
-      // Click on cat when tour is not active - purr and restart tour
+    }
+    // Chat controls
+    else if (target.closest('#chat-send-btn')) {
       e.preventDefault();
-      if (window.soundManager) {
-        window.soundManager.init();
-        window.soundManager.playPurr();
+      const input = document.getElementById('chat-input') as HTMLInputElement;
+      if (input) {
+        sendChatMessage(input.value);
       }
-      restartTour();
-    } else if (target.closest('#restart-tour')) {
-      // Click on restart button
+    } else if (target.closest('#chat-mic-btn')) {
       e.preventDefault();
+      startVoiceInput();
+    }
+    // FAB - floating mic button
+    else if (target.closest('#chat-fab')) {
+      e.preventDefault();
+      if (chatState === 'listening') {
+        // Stop listening if already listening
+        if (window.soundManager) {
+          window.soundManager.stopListening();
+        }
+        const fab = document.getElementById('chat-fab');
+        fab?.classList.remove('listening');
+        chatState = 'idle';
+      } else {
+        openChatBubble();
+        // Optionally start voice input immediately
+        setTimeout(() => startVoiceInput(), 500);
+      }
+    }
+    // Cat click
+    else if (target.closest('#cat-guide') && !state.isActive) {
+      e.preventDefault();
+
+      if (chatModeActive) {
+        // In chat mode, clicking cat toggles the chat bubble
+        const bubble = document.getElementById('speech-bubble');
+        if (bubble?.classList.contains('hidden')) {
+          openChatBubble();
+        } else {
+          // If in chat mode and bubble visible, restart tour instead
+          if (window.soundManager) {
+            window.soundManager.init();
+            window.soundManager.playPurr();
+          }
+          disableChatMode();
+          closeChatBubble();
+          restartTour();
+        }
+      } else {
+        // Not in chat mode - start/restart tour
+        if (window.soundManager) {
+          window.soundManager.init();
+          window.soundManager.playPurr();
+        }
+        restartTour();
+      }
+    }
+    // Restart button
+    else if (target.closest('#restart-tour')) {
+      e.preventDefault();
+      disableChatMode();
       restartTour();
     }
   });
+}
+
+// Start the tour
+async function startTour(): Promise<void> {
+  // Disable chat mode if active
+  disableChatMode();
+
+  // Initialize sound manager on tour start (requires user interaction)
+  if (window.soundManager) {
+    window.soundManager.init();
+    window.soundManager.playMeow();
+    window.soundManager.startAmbientPurr();
+
+    // Set cat voice for current page
+    window.soundManager.setCatVoice(getCurrentCatName());
+  }
+
+  // Load tour steps for current page
+  loadTourForCurrentPage();
+
+  // Switch speech bubble to tour mode
+  if (window.speechBubble) {
+    window.speechBubble.setMode('tour');
+    const catName = getCurrentCatName();
+    window.speechBubble.setTitle(`${catName.toLowerCase()}@guide:~$`);
+  }
+
+  state.currentStep = 0;
+  state.isActive = true;
+  state.hasCompleted = false;
+
+  // Mark tour as active for multi-page navigation
+  setTourActive(true);
+
+  // Show cat with entrance animation
+  if (window.catGuide) {
+    window.catGuide.show();
+  }
+
+  // Render first step
+  await renderStep();
+}
+
+// Restart tour (works on any page now!)
+async function restartTour(): Promise<void> {
+  await startTour();
 }
 
 // Initialize tour system
@@ -637,11 +1043,11 @@ function initTour(): void {
     // Check if tour is actively in progress (navigated from another page)
     if (isTourActive()) {
       setTimeout(() => {
-        // Initialize sound manager for continuing tour
         if (window.soundManager) {
           window.soundManager.init();
           window.soundManager.playMeow();
           window.soundManager.startAmbientPurr();
+          window.soundManager.setCatVoice(getCurrentCatName());
         }
         startTour();
       }, 500);
@@ -663,9 +1069,14 @@ function initTour(): void {
         startTour();
       }, 1000);
     } else {
-      // Just show the cat in idle state
+      // Show the cat in idle state
       if (window.catGuide) {
         window.catGuide.show();
+      }
+
+      // If tour was completed before, enable chat mode
+      if (hasCompletedTour()) {
+        enableChatMode();
       }
     }
   }, 100);
@@ -689,8 +1100,13 @@ declare global {
       hide: () => void;
       typeMessage: (message: string, speed?: number) => Promise<void>;
       setMessage: (message: string) => void;
+      appendText: (text: string) => void;
+      clearMessage: () => void;
       skipTyping: (fullMessage: string) => void;
       setStep: (current: number, total: number) => void;
+      setMode: (mode: 'tour' | 'chat') => void;
+      setTitle: (title: string) => void;
+      mode: 'tour' | 'chat';
     };
     tourSpotlight: {
       overlay: HTMLElement | null;
@@ -710,6 +1126,8 @@ declare global {
       speechSynth: SpeechSynthesis | null;
       currentUtterance: SpeechSynthesisUtterance | null;
       preferredVoice: SpeechSynthesisVoice | null;
+      currentCatName: string;
+      isListening: boolean;
       init: () => void;
       initVoice: () => void;
       playTypingSound: () => void;
@@ -717,12 +1135,17 @@ declare global {
       playPurr: () => void;
       playSuccess: () => void;
       speakMessage: (message: string) => void;
+      speakAsChat: (message: string, catName?: string) => Promise<void>;
       stopSpeaking: () => void;
       startAmbientPurr: () => void;
       stopAmbientPurr: () => void;
       setEnabled: (enabled: boolean) => void;
       setVoiceEnabled: (enabled: boolean) => void;
       setVolume: (volume: number) => void;
+      setCatVoice: (catName: string) => void;
+      startListening: (onResult: (text: string) => void, onError?: (error: string) => void) => void;
+      stopListening: () => void;
+      isSpeechRecognitionSupported: () => boolean;
     };
     portfolioTour: {
       start: () => Promise<void>;
@@ -731,6 +1154,8 @@ declare global {
       next: () => Promise<void>;
       prev: () => Promise<void>;
       isActive: () => boolean;
+      openChat: () => void;
+      closeChat: () => void;
     };
   }
 }
@@ -742,6 +1167,8 @@ window.portfolioTour = {
   next: nextStep,
   prev: prevStep,
   isActive: () => state.isActive,
+  openChat: openChatBubble,
+  closeChat: closeChatBubble,
 };
 
 // Initialize ambient sounds on first user interaction
@@ -764,7 +1191,6 @@ function initSoundsOnInteraction(): void {
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     initTour();
-    // Listen for first user interaction to start ambient sounds
     document.addEventListener('click', initSoundsOnInteraction);
     document.addEventListener('keydown', initSoundsOnInteraction);
   });

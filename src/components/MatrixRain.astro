@@ -36,10 +36,10 @@
     // Matrix characters
     const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const fontSize = 14;
-    const columns = Math.floor(canvas.width / fontSize);
+    let columns = Math.floor(canvas.width / fontSize);
 
     // Array of drops - one per column
-    const drops: number[] = [];
+    let drops: number[] = [];
     for (let i = 0; i < columns; i++) {
       drops[i] = Math.random() * -100;
     }
@@ -75,8 +75,8 @@
       }
     }
 
-    // Start animation
-    draw();
+    // Defer animation start to avoid blocking initial paint
+    requestAnimationFrame(() => draw());
 
     // Toggle functionality
     toggleBtn?.addEventListener('click', () => {

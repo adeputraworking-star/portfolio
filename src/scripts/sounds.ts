@@ -82,6 +82,19 @@ interface SoundManager {
   isSpeechRecognitionSupported: () => boolean;
 }
 
+// Track user activation for speechSynthesis (Chrome deprecation)
+let hasUserActivation = false;
+function markUserActivated(): void {
+  if (hasUserActivation) return;
+  hasUserActivation = true;
+  document.removeEventListener('click', markUserActivated);
+  document.removeEventListener('keydown', markUserActivated);
+  document.removeEventListener('touchstart', markUserActivated);
+}
+document.addEventListener('click', markUserActivated);
+document.addEventListener('keydown', markUserActivated);
+document.addEventListener('touchstart', markUserActivated);
+
 // Create the sound manager
 const soundManager: SoundManager = {
   audioContext: null,
@@ -439,7 +452,7 @@ const soundManager: SoundManager = {
   },
 
   speakMessage(message: string) {
-    if (!this.voiceEnabled || !this.speechSynth) return;
+    if (!this.voiceEnabled || !this.speechSynth || !hasUserActivation) return;
 
     // Stop any current speech
     this.stopSpeaking();
@@ -469,7 +482,7 @@ const soundManager: SoundManager = {
 
   speakAsChat(message: string, catName?: string): Promise<void> {
     return new Promise((resolve) => {
-      if (!this.voiceEnabled || !this.speechSynth) {
+      if (!this.voiceEnabled || !this.speechSynth || !hasUserActivation) {
         resolve();
         return;
       }

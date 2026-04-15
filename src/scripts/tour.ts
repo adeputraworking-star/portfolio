@@ -1187,17 +1187,19 @@ function initSoundsOnInteraction(): void {
   document.removeEventListener('keydown', initSoundsOnInteraction);
 }
 
-// Auto-init on DOM ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+// Auto-init: defer to a separate task to avoid a single long task blocking the main thread
+function scheduleInit(): void {
+  setTimeout(() => {
     initTour();
     document.addEventListener('click', initSoundsOnInteraction);
     document.addEventListener('keydown', initSoundsOnInteraction);
-  });
+  }, 0);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', scheduleInit);
 } else {
-  initTour();
-  document.addEventListener('click', initSoundsOnInteraction);
-  document.addEventListener('keydown', initSoundsOnInteraction);
+  scheduleInit();
 }
 
 export { startTour, restartTour, skipTour, nextStep, prevStep };

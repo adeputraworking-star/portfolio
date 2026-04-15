@@ -14,8 +14,46 @@ import TourSpotlight from './TourSpotlight.astro';
 <!-- Cat Guide (mascot) -->
 <CatGuide />
 
-<!-- Import sounds and tour logic -->
+<!-- Lazy-load sounds and tour logic to avoid blocking main thread.
+     Scripts load on first user interaction (instant response) OR after
+     an 8-second delay (for auto-tour on first visit). This keeps the
+     critical FCP→TTI window free of long tasks. -->
 <script>
-  import '../../scripts/sounds.ts';
-  import '../../scripts/tour.ts';
+  let tourLoaded = false;
+
+  async function loadTourScripts() {
+    if (tourLoaded) return;
+    tourLoaded = true;
+
+    // Remove interaction listeners
+    document.removeEventListener('click', onInteraction);
+    document.removeEventListener('keydown', onInteraction);
+    document.removeEventListener('touchstart', onInteraction);
+
+    // Yield a frame to let current interaction paint
+    await new Promise<void>(r => requestAnimationFrame(() => r()));
+
+    // Load sounds first (lighter module)
+    await import('../../scripts/sounds.ts');
+
+    // Yield to browser before loading heavier tour module
+    await new Promise(r => setTimeout(r, 0));
+    await import('../../scripts/tour.ts');
+  }
+
+  // Load immediately on first user interaction
+  function onInteraction() {
+    loadTourScripts();
+  }
+  document.addEventListener('click', onInteraction);
+  document.addEventListener('keydown', onInteraction);
+  document.addEventListener('touchstart', onInteraction);
+
+  // Fallback: load after TTI window settles (for auto-tour on first visit)
+  const DEFERRED_LOAD_MS = 8000;
+  if (document.readyState === 'complete') {
+    setTimeout(loadTourScripts, DEFERRED_LOAD_MS);
+  } else {
+    window.addEventListener('load', () => setTimeout(loadTourScripts, DEFERRED_LOAD_MS));
+  }
 </script>

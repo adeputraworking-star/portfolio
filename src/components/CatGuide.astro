@@ -130,18 +130,22 @@
   let bubbleVisible = false;
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let seenSections = new Set<string>();
-  let hasUserActivation = false;
+  // If user navigated here via click (e.g. "Next page" button), the browser
+  // already has a user activation. Use the UserActivation API to detect this
+  // so TTS works immediately without requiring a second interaction.
+  let hasUserActivation = !!(navigator.userActivation?.hasBeenActive);
 
-  // Track user activation so we only call speechSynthesis after interaction
   function markActivated() {
     hasUserActivation = true;
     document.removeEventListener('click', markActivated);
     document.removeEventListener('keydown', markActivated);
     document.removeEventListener('touchstart', markActivated);
   }
-  document.addEventListener('click', markActivated);
-  document.addEventListener('keydown', markActivated);
-  document.addEventListener('touchstart', markActivated);
+  if (!hasUserActivation) {
+    document.addEventListener('click', markActivated);
+    document.addEventListener('keydown', markActivated);
+    document.addEventListener('touchstart', markActivated);
+  }
 
   // ── Get next page ──
   function getNextPage(): string | null {

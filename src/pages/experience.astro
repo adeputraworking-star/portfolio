@@ -4,49 +4,64 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const experiences = [
   {
-    id: 'kazee',
-    role: 'Senior Fullstack Engineer',
-    company: 'PT Kazee Digital Indonesia',
-    shortName: 'Kazee',
-    period: 'Nov 2023 — Present',
-    description: 'Building healthcare information systems (SIMRS, HRIS) with real-time chat, e-signature integration, and complex multi-module architectures.',
-    tech: ['React', '.NET Core', 'PostgreSQL', 'SignalR', 'Redis'],
+    id: 'pegadaian',
+    role: 'Fullstack Engineer',
+    company: 'PT. Pegadaian',
+    shortName: 'Pegadaian',
+    industry: 'Fintech',
+    period: 'Dec 2025 — Present',
+    description: 'Handle Penetration Testing for Monitoring Environment Application and SAPA CMS. Create Auditor Application based on user needs on IAIS Application and handle revamp design on Customer Feedback Website and Backend.',
+    tech: ['NestJS', 'Springboot', 'Vue', 'TypeScript', 'PostgreSQL', 'PHP', 'Prisma', 'Microservices'],
   },
   {
-    id: 'bareksa',
-    role: 'Fullstack Developer',
-    company: 'PT Bareksa Portal Investasi',
-    shortName: 'Bareksa',
-    period: 'Jul 2022 — Nov 2023',
-    description: 'Developed real-time trading dashboards processing millions of stock price updates via WebSocket and Elasticsearch.',
-    tech: ['React', 'Node.js', 'Elasticsearch', 'WebSocket', 'Go'],
+    id: 'dataintegrasi',
+    role: 'Backend Engineer',
+    company: 'PT. Data Integrasi Inovasi',
+    shortName: 'Data Integrasi',
+    industry: 'Healthcare',
+    period: 'Aug 2025 — Nov 2025',
+    description: 'Improved document processing API by optimizing over 40 logic components. Integrated WhatsApp Live Chat using Qiscus API for real-time chat. Implemented Digital e-Signature (TTE) integration with vendors Peruri and Tilaka.',
+    tech: ['Node.js', 'NestJS', 'MongoDB', 'PostgreSQL', 'Socket.IO', 'Sequelize', 'Prisma'],
   },
   {
-    id: 'telkomsigma',
-    role: 'Software Engineer',
-    company: 'PT Sigma Cipta Caraka (Telkomsigma)',
-    shortName: 'Telkomsigma',
-    period: 'Feb 2021 — Jul 2022',
-    description: 'Built banking regulatory reporting systems. Optimized Excel import from 1 hour to 2 minutes for 30,000 rows.',
-    tech: ['.NET Core', 'SQL Server', 'Angular', 'SSRS'],
+    id: 'amp',
+    role: 'Fullstack Engineer',
+    company: 'PT. AMP',
+    shortName: 'AMP',
+    industry: 'Gaming',
+    period: 'Mar 2024 — May 2024',
+    description: 'Created a dashboard for monitoring the system and topping up certain games integrated with third-party application. Created API that meets business demands, ensuring reliability, robustness, security, and high performance.',
+    tech: ['React', 'Node.js', 'PostgreSQL', 'Sequelize'],
   },
   {
-    id: 'telkom',
-    role: 'Software Engineer',
-    company: 'PT Telekomunikasi Indonesia (Telkom)',
-    shortName: 'Telkom',
-    period: 'Aug 2020 — Feb 2021',
-    description: 'Developed video conferencing and file management systems for educational platforms.',
-    tech: ['Laravel', 'Vue.js', 'MySQL', 'WebRTC'],
+    id: 'bumiamartha',
+    role: 'Fullstack Engineer',
+    company: 'PT. Bumi Amartha Teknologi Mandiri',
+    shortName: 'Bumi Amartha',
+    industry: 'Banking',
+    period: 'Dec 2022 — Dec 2023',
+    description: 'Maintenance web application for Regulatory Reporting (ANTASENA, SLIK, SCV, APOLO). Built innovative custom export excel features and improved import excel performance from 1 hour to 2 mins. Led team of 2 junior software engineers.',
+    tech: ['React', '.NET Core', 'IIS', 'SQL Server', 'Microservices'],
   },
   {
-    id: 'digitalkode',
-    role: 'Junior Developer',
-    company: 'PT Digital Kode Teknologi',
-    shortName: 'Digital Kode',
-    period: 'Sep 2019 — Jul 2020',
-    description: 'Built game top-up monitoring dashboards with third-party provider integrations.',
-    tech: ['Laravel', 'jQuery', 'MySQL', 'REST API'],
+    id: 'kelola',
+    role: 'Fullstack Engineer',
+    company: 'PT. Kelola Teknologi Digital',
+    shortName: 'Kelola Tech',
+    industry: 'Education',
+    period: 'Nov 2021 — Dec 2022',
+    description: 'Maintenance web application for Web Video Conference. Improved backend structure, implementing file management system, and maintenance previous features.',
+    tech: ['React', 'Node.js', 'BigBlueButton'],
+  },
+  {
+    id: 'inovasi',
+    role: 'Fullstack Engineer',
+    company: 'PT. Inovasi Solusi International',
+    shortName: 'Inovasi Solusi',
+    industry: 'Fintech',
+    period: 'Feb 2019 — Nov 2021',
+    description: 'Created trading system from scratch, refactoring code, and optimizing performance. Built real-time dashboard data from millions of stock prices using WebSocket.',
+    tech: ['React', 'Node.js', 'Microservices', 'Docker', 'Kubernetes', 'Elasticsearch'],
   }
 ];
 ---
@@ -84,6 +99,7 @@ const experiences = [
           <div>
             <h2 class="text-lg font-bold text-fg-primary">{exp.role}</h2>
             <p class="text-accent text-sm font-medium">@ {exp.company}</p>
+            <span class="text-[0.625rem] font-mono text-teal uppercase tracking-wider">{exp.industry}</span>
           </div>
           <span class="text-xs font-mono text-fg-muted bg-bg-tertiary px-3 py-1 rounded-md whitespace-nowrap self-start">{exp.period}</span>
         </div>
@@ -120,7 +136,6 @@ const experiences = [
     tab.addEventListener('click', () => {
       const targetId = tab.dataset.expTab;
 
-      // Update tabs
       tabs.forEach((t) => {
         t.classList.remove('bg-accent-soft', 'text-accent', 'border-border-accent');
         t.classList.add('text-fg-muted', 'border-transparent');
@@ -128,7 +143,6 @@ const experiences = [
       tab.classList.add('bg-accent-soft', 'text-accent', 'border-border-accent');
       tab.classList.remove('text-fg-muted', 'border-transparent');
 
-      // Update panels
       panels.forEach((p) => {
         if (p.dataset.expPanel === targetId) {
           p.classList.remove('hidden');

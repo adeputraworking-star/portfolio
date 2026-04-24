@@ -34,13 +34,21 @@ const fullTitle = `${title} | Ade Putra Susila`;
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
-    <!-- Fonts -->
+    <!-- Fonts — non-render-blocking with media swap -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -49,6 +57,12 @@ const fullTitle = `${title} | Ade Putra Susila`;
   </head>
   <body class="min-h-screen bg-bg-primary text-fg-primary relative overflow-x-hidden">
     <!-- Ambient background -->
+    <div class="bg-video-wrapper" aria-hidden="true">
+      <video id="bg-video" class="bg-video" autoplay loop muted playsinline disablepictureinpicture>
+        <source src="/bg.webm" type="video/webm" />
+        <source src="/bg.mp4" type="video/mp4" />
+      </video>
+    </div>
     <div class="bg-grid" aria-hidden="true"></div>
     <div class="ambient-orb ambient-orb-1" aria-hidden="true"></div>
     <div class="ambient-orb ambient-orb-2" aria-hidden="true"></div>
@@ -64,10 +78,28 @@ const fullTitle = `${title} | Ade Putra Susila`;
     <!-- Cat Guide + Narration -->
     <CatGuide />
 
-    <!-- Service Worker registration -->
+    <!-- Deferred: lazy-load GIF background and paw trail after page interactive -->
     <script is:inline>
+      // Lazy-load the background video after page loads
+      window.addEventListener('load', function() {
+        var video = document.getElementById('bg-video');
+        if (video) video.play().catch(function(){});
+      });
+
+      // Paw click trail
+      document.addEventListener('click', function(e) {
+        var paw = document.createElement('div');
+        paw.className = 'paw-print';
+        paw.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='20' height='24' viewBox='0 0 24 28'><ellipse cx='12' cy='18' rx='5' ry='4' fill='#7c9eff' opacity='0.7'/><circle cx='7' cy='10' r='2.5' fill='#7c9eff' opacity='0.6'/><circle cx='12' cy='7' r='2.5' fill='#7c9eff' opacity='0.6'/><circle cx='17' cy='10' r='2.5' fill='#7c9eff' opacity='0.6'/></svg>";
+        paw.style.left = (e.clientX - 10) + 'px';
+        paw.style.top = (e.clientY - 12) + 'px';
+        document.body.appendChild(paw);
+        setTimeout(function() { paw.remove(); }, 800);
+      });
+
+      // Service Worker
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
+        navigator.serviceWorker.register('/sw.js').catch(function(){});
       }
     </script>
   </body>

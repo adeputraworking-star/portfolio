@@ -17,6 +17,7 @@
   "skills": {
     "frontend": [
       { "name": "React JS", "level": 95 },
+      { "name": "Vue", "level": 80 },
       { "name": "TypeScript", "level": 85 },
       { "name": "HTML/CSS", "level": 90 }
     ],
@@ -24,6 +25,8 @@
       { "name": "Node.js", "level": 90 },
       { "name": "NestJS", "level": 85 },
       { "name": ".NET Core", "level": 80 },
+      { "name": "Java Springboot", "level": 75 },
+      { "name": "PHP / Laravel", "level": 75 },
       { "name": "REST API", "level": 95 }
     ],
     "database": [
@@ -44,6 +47,7 @@
       { "name": "Socket.IO", "level": 85 },
       { "name": "Microservices", "level": 80 },
       { "name": "Prisma", "level": 80 },
+      { "name": "Sequelize", "level": 80 },
       { "name": "Elasticsearch", "level": 70 }
     ]
   },

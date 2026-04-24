@@ -5,43 +5,51 @@ import Terminal from '../components/Terminal.astro';
 
 const projects = [
   {
+    name: 'iais-monitoring-system',
+    description: 'Auditor application and penetration testing for monitoring environment and SAPA CMS. Revamped Customer Feedback website and backend.',
+    tech: ['NestJS', 'Springboot', 'Vue', 'TypeScript', 'PostgreSQL', 'PHP', 'Prisma'],
+    type: 'Fintech',
+    highlight: 'Vulnerability Assessment & Penetration Testing',
+    color: '#ef4444'
+  },
+  {
     name: 'simrs-hris-system',
-    description: 'Healthcare information system including SIMRS, HRIS, and Unit Cost modules with real-time chat and e-signature integration',
+    description: 'Healthcare information system including SIMRS, HRIS, and Unit Cost modules with real-time WhatsApp chat and digital e-signature integration.',
     tech: ['Node.js', 'NestJS', 'MongoDB', 'PostgreSQL', 'Socket.IO', 'Prisma'],
     type: 'Healthcare',
-    highlight: 'Digital e-Signature (TTE) integration',
+    highlight: 'Digital e-Signature (TTE) with Peruri & Tilaka',
     color: '#7c9eff'
   },
   {
     name: 'trading-system',
-    description: 'Real-time trading system with live stock price dashboard processing millions of data points',
-    tech: ['React JS', 'Node.js', 'WebSocket', 'Elasticsearch', 'Docker'],
+    description: 'Real-time trading system with live stock price dashboard processing millions of data points via WebSocket.',
+    tech: ['React', 'Node.js', 'WebSocket', 'Elasticsearch', 'Docker', 'Kubernetes'],
     type: 'Fintech',
     highlight: 'Real-time dashboard with WebSocket',
     color: '#52d1a4'
   },
   {
     name: 'regulatory-reporting',
-    description: 'Banking regulatory reporting system for ANTASENA, SLIK, SCV, and APOLO modules',
-    tech: ['React JS', '.NET Core', 'SQL Server', 'Microservices'],
+    description: 'Banking regulatory reporting system for ANTASENA, SLIK, SCV, and APOLO modules. Led team of 2 junior engineers.',
+    tech: ['React', '.NET Core', 'SQL Server', 'IIS', 'Microservices'],
     type: 'Banking',
-    highlight: 'Excel import: 1hr → 2min',
+    highlight: 'Excel import: 1hr → 2min for 30K rows',
     color: '#f472b6'
   },
   {
     name: 'video-conference',
-    description: 'Web-based video conference and management system for educational purposes',
-    tech: ['React JS', 'Node.js', 'BigBlueButton'],
+    description: 'Web-based video conference and file management system for educational platforms.',
+    tech: ['React', 'Node.js', 'BigBlueButton'],
     type: 'Education',
     highlight: 'File management system',
     color: '#fbbf24'
   },
   {
     name: 'game-topup-monitor',
-    description: 'Dashboard for monitoring and top-up services integrated with third-party game providers',
-    tech: ['React JS', 'Node.js', 'PostgreSQL', 'Sequelize'],
+    description: 'Dashboard for monitoring and top-up services integrated with third-party game providers.',
+    tech: ['React', 'Node.js', 'PostgreSQL', 'Sequelize'],
     type: 'Gaming',
-    highlight: 'Third-party integration',
+    highlight: 'Third-party provider integration',
     color: '#a78bfa'
   }
 ];

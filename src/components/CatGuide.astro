@@ -1,22 +1,26 @@
 ---
-// CatGuide — Hero-level cat mascot with scroll-driven narration + Web Speech API TTS
-// Renders as a fixed companion in the bottom-right with an expanding speech bubble.
-// Scroll-triggers are set up per-page via data-cat-section attributes on the page.
+// CatGuide — Cat mascot with scroll-driven narration, auto voice, and page-by-page guided tour.
+// Scroll-triggers via data-cat-section attributes. Guides users to the next page automatically.
 ---
 
-
 <!-- Cat Speech Bubble -->
-<div id="cat-bubble" class="fixed bottom-[130px] right-4 z-50 transition-all duration-300 origin-bottom-right opacity-0 scale-90 pointer-events-none" style="max-width: 320px; min-width: 260px;">
+<div id="cat-bubble" class="fixed bottom-[130px] right-4 z-50 transition-all duration-300 origin-bottom-right pointer-events-none" style="max-width: 320px; min-width: 260px; contain: layout style; display: none;">
   <div class="glass rounded-xl overflow-hidden shadow-2xl" style="box-shadow: 0 0 30px rgba(124,158,255,0.15), 0 8px 32px rgba(0,0,0,0.4);">
     <div class="flex items-center gap-1.5 px-3 py-2 border-b border-white/5" style="background: rgba(255,255,255,0.03);">
       <span class="w-2 h-2 rounded-full bg-dot-red"></span>
       <span class="w-2 h-2 rounded-full bg-dot-yellow"></span>
       <span class="w-2 h-2 rounded-full bg-dot-green"></span>
-      <span id="cat-bubble-title" class="flex-1 text-center text-[0.625rem] font-mono text-fg-muted">neko@guide:~$</span>
+      <span id="cat-bubble-title" class="flex-1 text-center text-[0.625rem] font-mono text-fg-secondary">neko@guide:~$</span>
     </div>
     <div class="px-3.5 py-3 min-h-[50px]">
       <span id="cat-bubble-text" class="text-[0.8125rem] text-fg-primary leading-relaxed"></span>
       <span id="cat-cursor" class="animate-blink font-mono text-accent font-bold">_</span>
+    </div>
+    <!-- Next page button -->
+    <div id="cat-nav" class="hidden px-3.5 pb-3 pt-1">
+      <button id="cat-next-page" class="w-full btn-primary text-xs justify-center py-2 cursor-pointer">
+        Next page →
+      </button>
     </div>
   </div>
   <!-- Arrow -->
@@ -26,11 +30,12 @@
 <!-- Voice Toggle -->
 <button
   id="cat-voice-btn"
-  class="fixed bottom-[130px] right-[calc(1rem+82px)] z-50 glass rounded-lg px-2.5 py-1.5 text-[0.625rem] font-mono text-fg-muted hover:text-accent transition-colors cursor-pointer"
+  class="fixed bottom-[130px] right-[calc(1rem+82px)] z-50 glass rounded-lg px-2.5 py-1.5 text-[0.625rem] font-mono hover:text-accent transition-colors cursor-pointer"
+  style="color: #52d1a4;"
   title="Toggle cat voice"
   aria-label="Toggle cat voice narration"
 >
-  🔊 <span id="cat-voice-status">OFF</span>
+  🔊 <span id="cat-voice-status">ON</span>
 </button>
 
 <!-- Cat Character -->
@@ -89,46 +94,102 @@
 </div>
 
 <script>
+  // ── Page navigation order for guided tour ──
+  const pageOrder = ['/', '/about', '/skills', '/projects', '/experience', '/contact', '/blog'];
+  const pageNames: Record<string, string> = {
+    '/': 'About', '/about': 'Skills', '/skills': 'Projects',
+    '/projects': 'Experience', '/experience': 'Contact', '/contact': 'Blog',
+  };
+
   // ── Cat narration lines per section ──
   const catLines: Record<string, string> = {
-    'hero':       "hi! i'm neko 🐾 scroll down and i'll show you around!",
+    'hero':       "hey! i'm neko, your guide. scroll down and i'll walk you through ade's work!",
     'highlights': "some cool stuff ade has done. the excel one is wild.",
-    'about':      "this is ade. self-taught, 5+ years, always shipping 💤",
+    'about':      "this is ade. self-taught, 5+ years, always shipping.",
     'education':  "binus grad! not bad for a self-taught dev.",
     'stats':      "numbers go brrr. five years across five industries.",
-    'skills':     "his skill tree is pretty deep. the bars don't lie.",
-    'projects':   "the real stuff — production systems, not just side projects ✨",
-    'experience': "career timeline. some of these gigs were intense.",
+    'skills':     "his skill tree is pretty deep. react, node, .net, springboot, vue...",
+    'projects':   "real production systems across fintech, healthcare, banking, gaming, and education.",
+    'experience': "career timeline. from startup to enterprise, each one was a level-up.",
     'blog':       "he writes sometimes. good reading while i nap on your keyboard.",
     'contact':    "wanna reach out? he reads everything. i read half.",
   };
 
   const bubble = document.getElementById('cat-bubble');
   const bubbleText = document.getElementById('cat-bubble-text');
-  const bubbleTitle = document.getElementById('cat-bubble-title');
   const catCursor = document.getElementById('cat-cursor');
-  const catGuide = document.getElementById('cat-guide');
+  const catGuideEl = document.getElementById('cat-guide');
   const voiceBtn = document.getElementById('cat-voice-btn');
   const voiceStatus = document.getElementById('cat-voice-status');
+  const catNav = document.getElementById('cat-nav');
+  const catNextBtn = document.getElementById('cat-next-page');
 
-  let voiceOn = false;
+  let voiceOn = true; // Auto ON by default
   let currentLine = '';
   let typeTimer: ReturnType<typeof setInterval> | null = null;
   let bubbleVisible = false;
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let seenSections = new Set<string>();
+  let hasUserActivation = false;
+
+  // Track user activation so we only call speechSynthesis after interaction
+  function markActivated() {
+    hasUserActivation = true;
+    document.removeEventListener('click', markActivated);
+    document.removeEventListener('keydown', markActivated);
+    document.removeEventListener('touchstart', markActivated);
+  }
+  document.addEventListener('click', markActivated);
+  document.addEventListener('keydown', markActivated);
+  document.addEventListener('touchstart', markActivated);
+
+  // ── Get next page ──
+  function getNextPage(): string | null {
+    let path = window.location.pathname;
+    if (path.endsWith('/') && path !== '/') path = path.slice(0, -1);
+    const idx = pageOrder.indexOf(path);
+    if (idx === -1 || idx >= pageOrder.length - 1) return null;
+    return pageOrder[idx + 1];
+  }
+
+  function getNextPageLabel(): string {
+    let path = window.location.pathname;
+    if (path.endsWith('/') && path !== '/') path = path.slice(0, -1);
+    return pageNames[path] || 'Next';
+  }
 
   // ── Show / hide bubble ──
+  let fontsReady = false;
+
   function showBubble() {
-    if (!bubble) return;
-    bubble.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
-    bubble.classList.add('opacity-100', 'scale-100');
+    if (!bubble || !fontsReady) return;
+    bubble.style.display = '';
+    bubble.classList.remove('pointer-events-none');
+    bubble.style.opacity = '1';
+    bubble.style.transform = 'scale(1)';
     bubbleVisible = true;
   }
   function hideBubble() {
     if (!bubble) return;
-    bubble.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
-    bubble.classList.remove('opacity-100', 'scale-100');
+    bubble.classList.add('pointer-events-none');
+    bubble.style.opacity = '0';
+    bubble.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+      if (!bubbleVisible) bubble.style.display = 'none';
+    }, 300);
     bubbleVisible = false;
+  }
+
+  // ── Show/hide next page button ──
+  function updateNavButton() {
+    if (!catNav || !catNextBtn) return;
+    const next = getNextPage();
+    if (next) {
+      catNextBtn.textContent = `Next: ${getNextPageLabel()} →`;
+      catNav.classList.remove('hidden');
+    } else {
+      catNav.classList.add('hidden');
+    }
   }
 
   // ── Typewriter ──
@@ -144,17 +205,17 @@
       } else {
         if (typeTimer) clearInterval(typeTimer);
         catCursor.style.display = 'none';
+        updateNavButton();
       }
     }, 24);
   }
 
   // ── TTS ──
   function speak(text: string) {
-    if (!voiceOn || !('speechSynthesis' in window)) return;
+    if (!voiceOn || !hasUserActivation || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    // Small delay after cancel to avoid Chrome audio glitch
     setTimeout(() => {
-      const u = new SpeechSynthesisUtterance(text.replace(/[🐾💤✨]/g, ''));
+      const u = new SpeechSynthesisUtterance(text);
       u.rate = 1.05;
       u.pitch = 1.4;
       u.volume = 0.85;
@@ -165,13 +226,14 @@
     }, 80);
   }
 
-  // ── Set line (debounced to prevent rapid-fire on fast scroll) ──
+  // ── Set line (debounced) ──
   function setLine(key: string) {
     const text = catLines[key] || catLines['hero'];
     if (text === currentLine) return;
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       currentLine = text;
+      seenSections.add(key);
       showBubble();
       typeText(text);
       speak(text);
@@ -200,9 +262,15 @@
   }
 
   // ── Click cat to toggle ──
-  catGuide?.addEventListener('click', () => {
+  catGuideEl?.addEventListener('click', () => {
     if (bubbleVisible) hideBubble();
     else { showBubble(); typeText(currentLine || catLines['hero']); }
+  });
+
+  // ── Next page button ──
+  catNextBtn?.addEventListener('click', () => {
+    const next = getNextPage();
+    if (next) window.location.href = next;
   });
 
   // ── Voice toggle ──
@@ -214,23 +282,37 @@
     else if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   });
 
+  // ── Get initial section key for current page ──
+  function getPageKey(): string {
+    const path = window.location.pathname.replace(/^\/|\/$/g, '');
+    // Home page → 'hero', other pages → page name (about, skills, etc.)
+    return path || 'hero';
+  }
+
   // ── Init ──
   document.addEventListener('DOMContentLoaded', () => {
-    // Load voices (Chrome loads them async)
     if ('speechSynthesis' in window) {
       window.speechSynthesis.getVoices();
       window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     }
     initScrollObserver();
-    // Show initial line after short delay
-    setTimeout(() => setLine('hero'), 300);
+
+    // Wait for fonts to finish loading before showing the bubble to avoid CLS
+    document.fonts.ready.then(() => {
+      fontsReady = true;
+      setTimeout(() => setLine(getPageKey()), 300);
+    });
   });
 
   // Re-init on Astro page transitions
   document.addEventListener('astro:page-load', () => {
+    seenSections.clear();
+    currentLine = ''; // Reset so the new page line plays
     initScrollObserver();
-    const pageName = window.location.pathname.replace(/^\/|\/$/g, '') || 'hero';
-    setLine(pageName);
+    document.fonts.ready.then(() => {
+      fontsReady = true;
+      setTimeout(() => setLine(getPageKey()), 300);
+    });
   });
 </script>
 

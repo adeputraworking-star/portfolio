@@ -2,7 +2,6 @@
 // CatGuide — Hero-level cat mascot with scroll-driven narration + Web Speech API TTS
 // Renders as a fixed companion in the bottom-right with an expanding speech bubble.
 // Scroll-triggers are set up per-page via data-cat-section attributes on the page.
-// TODO: Add Downloaded CV button ( will provide later ) and updated CV also fix the experience tab bar, added new background design maybe a gif ? 
 ---
 
 
@@ -116,6 +115,7 @@
   let currentLine = '';
   let typeTimer: ReturnType<typeof setInterval> | null = null;
   let bubbleVisible = false;
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ── Show / hide bubble ──
   function showBubble() {
@@ -152,24 +152,30 @@
   function speak(text: string) {
     if (!voiceOn || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/[🐾💤✨]/g, ''));
-    u.rate = 1.05;
-    u.pitch = 1.4;
-    u.volume = 0.85;
-    const voices = window.speechSynthesis.getVoices();
-    const pref = voices.find(v => /samantha|zira|google us/i.test(v.name)) || voices[0];
-    if (pref) u.voice = pref;
-    window.speechSynthesis.speak(u);
+    // Small delay after cancel to avoid Chrome audio glitch
+    setTimeout(() => {
+      const u = new SpeechSynthesisUtterance(text.replace(/[🐾💤✨]/g, ''));
+      u.rate = 1.05;
+      u.pitch = 1.4;
+      u.volume = 0.85;
+      const voices = window.speechSynthesis.getVoices();
+      const pref = voices.find(v => /samantha|zira|google us/i.test(v.name)) || voices[0];
+      if (pref) u.voice = pref;
+      window.speechSynthesis.speak(u);
+    }, 80);
   }
 
-  // ── Set line ──
+  // ── Set line (debounced to prevent rapid-fire on fast scroll) ──
   function setLine(key: string) {
     const text = catLines[key] || catLines['hero'];
     if (text === currentLine) return;
-    currentLine = text;
-    showBubble();
-    typeText(text);
-    speak(text);
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      currentLine = text;
+      showBubble();
+      typeText(text);
+      speak(text);
+    }, 150);
   }
 
   // ── Scroll observer ──
@@ -217,7 +223,7 @@
     }
     initScrollObserver();
     // Show initial line after short delay
-    setTimeout(() => setLine('hero'), 800);
+    setTimeout(() => setLine('hero'), 300);
   });
 
   // Re-init on Astro page transitions

@@ -1,38 +1,52 @@
 ---
 export const prerender = true;
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ExperienceItem from '../components/ExperienceItem.astro';
 
 const experiences = [
   {
+    id: 'kazee',
     role: 'Senior Fullstack Engineer',
     company: 'PT Kazee Digital Indonesia',
+    shortName: 'Kazee',
     period: 'Nov 2023 — Present',
-    description: 'Building healthcare information systems (SIMRS, HRIS) with real-time chat, e-signature integration, and complex multi-module architectures.'
+    description: 'Building healthcare information systems (SIMRS, HRIS) with real-time chat, e-signature integration, and complex multi-module architectures.',
+    tech: ['React', '.NET Core', 'PostgreSQL', 'SignalR', 'Redis'],
   },
   {
+    id: 'bareksa',
     role: 'Fullstack Developer',
     company: 'PT Bareksa Portal Investasi',
+    shortName: 'Bareksa',
     period: 'Jul 2022 — Nov 2023',
-    description: 'Developed real-time trading dashboards processing millions of stock price updates via WebSocket and Elasticsearch.'
+    description: 'Developed real-time trading dashboards processing millions of stock price updates via WebSocket and Elasticsearch.',
+    tech: ['React', 'Node.js', 'Elasticsearch', 'WebSocket', 'Go'],
   },
   {
+    id: 'telkomsigma',
     role: 'Software Engineer',
     company: 'PT Sigma Cipta Caraka (Telkomsigma)',
+    shortName: 'Telkomsigma',
     period: 'Feb 2021 — Jul 2022',
-    description: 'Built banking regulatory reporting systems. Optimized Excel import from 1 hour to 2 minutes for 30,000 rows.'
+    description: 'Built banking regulatory reporting systems. Optimized Excel import from 1 hour to 2 minutes for 30,000 rows.',
+    tech: ['.NET Core', 'SQL Server', 'Angular', 'SSRS'],
   },
   {
+    id: 'telkom',
     role: 'Software Engineer',
     company: 'PT Telekomunikasi Indonesia (Telkom)',
+    shortName: 'Telkom',
     period: 'Aug 2020 — Feb 2021',
-    description: 'Developed video conferencing and file management systems for educational platforms.'
+    description: 'Developed video conferencing and file management systems for educational platforms.',
+    tech: ['Laravel', 'Vue.js', 'MySQL', 'WebRTC'],
   },
   {
+    id: 'digitalkode',
     role: 'Junior Developer',
     company: 'PT Digital Kode Teknologi',
+    shortName: 'Digital Kode',
     period: 'Sep 2019 — Jul 2020',
-    description: 'Built game top-up monitoring dashboards with third-party provider integrations.'
+    description: 'Built game top-up monitoring dashboards with third-party provider integrations.',
+    tech: ['Laravel', 'jQuery', 'MySQL', 'REST API'],
   }
 ];
 ---
@@ -44,15 +58,89 @@ const experiences = [
       <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Where I've <span class="gradient-text">been.</span></h1>
     </div>
 
-    <div class="card p-6">
-      {experiences.map((exp) => (
-        <ExperienceItem
-          role={exp.role}
-          company={exp.company}
-          period={exp.period}
-          description={exp.description}
-        />
+    <!-- Tab Bar -->
+    <div class="flex gap-1 overflow-x-auto pb-1 mb-6 scrollbar-hide">
+      {experiences.map((exp, i) => (
+        <button
+          data-exp-tab={exp.id}
+          class={`exp-tab whitespace-nowrap px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
+            i === 0
+              ? 'bg-accent-soft text-accent border border-border-accent'
+              : 'text-fg-muted hover:text-fg-primary hover:bg-bg-tertiary border border-transparent'
+          }`}
+        >
+          {exp.shortName}
+        </button>
       ))}
+    </div>
+
+    <!-- Experience Panels -->
+    {experiences.map((exp, i) => (
+      <div
+        data-exp-panel={exp.id}
+        class={`card p-6 transition-all duration-300 ${i === 0 ? '' : 'hidden'}`}
+      >
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-fg-primary">{exp.role}</h2>
+            <p class="text-accent text-sm font-medium">@ {exp.company}</p>
+          </div>
+          <span class="text-xs font-mono text-fg-muted bg-bg-tertiary px-3 py-1 rounded-md whitespace-nowrap self-start">{exp.period}</span>
+        </div>
+        <p class="text-sm text-fg-secondary leading-relaxed mb-4">{exp.description}</p>
+        <div class="flex flex-wrap gap-1.5">
+          {exp.tech.map((t: string) => (
+            <span class="tech-chip">{t}</span>
+          ))}
+        </div>
+      </div>
+    ))}
+
+    <!-- Timeline Overview -->
+    <div class="mt-8">
+      <p class="text-xs font-mono text-fg-muted mb-4 uppercase tracking-widest">Timeline</p>
+      <div class="card p-6">
+        {experiences.map((exp) => (
+          <div class="timeline-item">
+            <div class="font-semibold text-sm text-fg-primary">{exp.role}</div>
+            <div class="text-sm text-accent mt-0.5">@ {exp.company}</div>
+            <div class="text-xs text-fg-muted font-mono mt-0.5">{exp.period}</div>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>('[data-exp-tab]');
+  const panels = document.querySelectorAll<HTMLElement>('[data-exp-panel]');
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const targetId = tab.dataset.expTab;
+
+      // Update tabs
+      tabs.forEach((t) => {
+        t.classList.remove('bg-accent-soft', 'text-accent', 'border-border-accent');
+        t.classList.add('text-fg-muted', 'border-transparent');
+      });
+      tab.classList.add('bg-accent-soft', 'text-accent', 'border-border-accent');
+      tab.classList.remove('text-fg-muted', 'border-transparent');
+
+      // Update panels
+      panels.forEach((p) => {
+        if (p.dataset.expPanel === targetId) {
+          p.classList.remove('hidden');
+        } else {
+          p.classList.add('hidden');
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

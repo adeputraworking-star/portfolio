@@ -121,7 +121,11 @@ import profile from '../data/profile.json';
     </div>
 
     <!-- Quick Actions -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-8">
+      <a href="/cv.pdf" download class="card p-4 text-center group">
+        <div class="text-accent font-mono text-xs group-hover:text-teal transition-colors">dl</div>
+        <div class="text-sm font-medium mt-1">Download CV</div>
+      </a>
       <a href={`mailto:${profile.email}`} class="card p-4 text-center group">
         <div class="text-accent font-mono text-xs group-hover:text-teal transition-colors">mail</div>
         <div class="text-sm font-medium mt-1">Email</div>

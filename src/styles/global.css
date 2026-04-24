@@ -304,6 +304,19 @@ a:hover { color: var(--color-teal); }
 /* ============================================================
    AMBIENT BACKGROUND
    ============================================================ */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(124, 158, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 158, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 30%, black 20%, transparent 100%);
+}
+
 .ambient-orb {
   position: fixed;
   border-radius: 50%;

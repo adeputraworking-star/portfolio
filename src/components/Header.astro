@@ -1,64 +1,61 @@
 ---
 const navItems = [
-  { name: 'home', path: '/', cmd: 'cd ~' },
-  { name: 'about', path: '/about', cmd: 'cat about.txt' },
-  { name: 'skills', path: '/skills', cmd: 'ls skills/' },
-  { name: 'projects', path: '/projects', cmd: 'ls -la projects/' },
-  { name: 'experience', path: '/experience', cmd: 'history' },
-  { name: 'blog', path: '/blog', cmd: 'tail -f blog/' },
-  { name: 'contact', path: '/contact', cmd: './contact.sh' },
+  { name: 'home', path: '/' },
+  { name: 'about', path: '/about' },
+  { name: 'skills', path: '/skills' },
+  { name: 'projects', path: '/projects' },
+  { name: 'experience', path: '/experience' },
+  { name: 'blog', path: '/blog' },
+  { name: 'contact', path: '/contact' },
 ];
 
 const currentPath = Astro.url.pathname;
 ---
 
-<header class="sticky top-0 z-50 bg-bg-primary/95 backdrop-blur border-b border-terminal-border" data-tour-id="header-nav">
-  <nav class="container mx-auto px-4 max-w-5xl">
+<header class="sticky top-0 z-50 border-b border-border" style="background: rgba(10,11,16,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+  <nav class="container mx-auto px-4 sm:px-6 max-w-5xl">
     <div class="flex items-center justify-between h-14">
       <!-- Logo -->
-      <a href="/" class="text-terminal-green font-bold text-lg hover:glow-sm transition-all">
-        <span class="text-terminal-cyan">~/</span>ade
+      <a href="/" class="flex items-center gap-2.5 group">
+        <div class="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center text-xs font-bold text-bg-primary transition-shadow group-hover:shadow-[0_0_16px_rgba(124,158,255,0.4)]">
+          a
+        </div>
+        <span class="font-semibold text-sm tracking-tight text-fg-primary">ade<span class="text-fg-muted">.dev</span></span>
       </a>
 
       <!-- Desktop Navigation -->
       <ul class="hidden md:flex items-center gap-1">
-        <!-- Tour Restart Button -->
-        <li>
-          <button
-            id="restart-tour"
-            class="px-2 py-2 text-sm text-terminal-muted hover:text-terminal-green hover:bg-bg-secondary rounded transition-all"
-            title="Restart tour"
-            aria-label="Restart guided tour"
-          >
-            [?]
-          </button>
-        </li>
         {navItems.map((item) => (
           <li>
             <a
               href={item.path}
-              class={`px-3 py-2 text-sm rounded transition-all hover:bg-bg-secondary group ${
-                currentPath === item.path
-                  ? 'text-terminal-green bg-bg-secondary'
-                  : 'text-terminal-muted hover:text-terminal-green'
+              class={`px-3 py-1.5 text-sm rounded-md transition-all font-medium ${
+                currentPath === item.path || (item.path !== '/' && currentPath.startsWith(item.path))
+                  ? 'text-accent bg-accent-soft'
+                  : 'text-fg-muted hover:text-fg-primary hover:bg-bg-tertiary'
               }`}
             >
-              <span class="text-terminal-cyan opacity-0 group-hover:opacity-100 transition-opacity">$</span>
               {item.name}
             </a>
           </li>
         ))}
+        <li>
+          <span class="ml-2 flex items-center gap-1.5 text-xs font-mono text-teal">
+            <span class="status-dot"></span>
+            available
+          </span>
+        </li>
       </ul>
 
       <!-- Mobile Menu Button -->
       <button
         id="mobile-menu-btn"
-        class="md:hidden p-2 text-terminal-green hover:bg-bg-secondary rounded"
+        class="md:hidden p-2 text-fg-primary hover:bg-bg-tertiary rounded-lg transition-colors"
         aria-label="Toggle menu"
       >
-        <span class="block w-5 h-0.5 bg-current mb-1"></span>
-        <span class="block w-5 h-0.5 bg-current mb-1"></span>
-        <span class="block w-5 h-0.5 bg-current"></span>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M3 6h14M3 10h14M3 14h14" />
+        </svg>
       </button>
     </div>
 
@@ -69,13 +66,13 @@ const currentPath = Astro.url.pathname;
           <li>
             <a
               href={item.path}
-              class={`block px-3 py-2 text-sm rounded transition-all ${
+              class={`block px-3 py-2 text-sm rounded-lg transition-all ${
                 currentPath === item.path
-                  ? 'text-terminal-green bg-bg-secondary'
-                  : 'text-terminal-muted hover:text-terminal-green hover:bg-bg-secondary'
+                  ? 'text-accent bg-accent-soft'
+                  : 'text-fg-muted hover:text-fg-primary hover:bg-bg-tertiary'
               }`}
             >
-              <span class="text-terminal-cyan">$</span> {item.cmd}
+              {item.name}
             </a>
           </li>
         ))}
@@ -87,7 +84,6 @@ const currentPath = Astro.url.pathname;
 <script>
   const menuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
-
   menuBtn?.addEventListener('click', () => {
     mobileMenu?.classList.toggle('hidden');
   });

@@ -1,8 +1,7 @@
 ---
 export const prerender = true;
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Terminal from '../../components/Terminal.astro';
 import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -17,81 +16,33 @@ const { Content } = await post.render();
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="py-8">
-    <!-- Command Header -->
+  <article class="py-8 max-w-3xl">
     <div class="mb-8">
-      <p class="text-terminal-cyan mb-2">visitor@ade-portfolio:~$</p>
-      <h1 class="text-2xl md:text-3xl text-terminal-green glow-sm">cat blog/{post.slug}.md</h1>
-    </div>
-
-    <!-- Post Meta -->
-    <Terminal title={`${post.slug}.md`} class="mb-8">
-      <div class="space-y-2">
-        <p>
-          <span class="text-terminal-cyan">title</span>="<span class="text-terminal-orange">{post.data.title}</span>"
-        </p>
-        <p>
-          <span class="text-terminal-cyan">date</span>="<span class="text-terminal-muted">{new Date(post.data.date).toISOString().split('T')[0]}</span>"
-        </p>
-        <p>
-          <span class="text-terminal-cyan">author</span>="<span class="text-terminal-green">Ade Putra Susila</span>"
-        </p>
+      <a href="/blog" class="text-accent text-sm font-mono hover:text-teal transition-colors">← back to blog</a>
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight mt-4 mb-3">{post.data.title}</h1>
+      <div class="flex items-center gap-3 text-sm text-fg-muted font-mono">
+        <time>{post.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
         {post.data.tags && (
-          <p>
-            <span class="text-terminal-cyan">tags</span>=(<span class="text-terminal-yellow">{post.data.tags.map((t: string) => `"${t}"`).join(' ')}</span>)
-          </p>
+          <div class="flex gap-1.5">
+            {post.data.tags.map((tag: string) => (
+              <span class="px-2 py-0.5 rounded bg-accent-soft text-accent text-xs">{tag}</span>
+            ))}
+          </div>
         )}
       </div>
-    </Terminal>
-
-    <!-- Post Content -->
-    <div class="terminal-window">
-      <div class="terminal-header">
-        <span class="terminal-dot terminal-dot-red"></span>
-        <span class="terminal-dot terminal-dot-yellow"></span>
-        <span class="terminal-dot terminal-dot-green"></span>
-        <span class="terminal-title">content</span>
-      </div>
-      <div class="terminal-body prose prose-invert prose-green max-w-none">
-        <Content />
-      </div>
     </div>
 
-    <!-- Back Link -->
-    <div class="mt-8">
-      <a href="/blog" class="text-terminal-cyan hover:text-terminal-green hover:glow-sm transition-all">
-        &lt;- cd ../blog
-      </a>
+    <div class="prose prose-invert prose-sm max-w-none
+      prose-headings:text-fg-primary prose-headings:font-bold prose-headings:tracking-tight
+      prose-p:text-fg-secondary prose-p:leading-relaxed
+      prose-a:text-accent prose-a:no-underline hover:prose-a:text-teal
+      prose-strong:text-fg-primary
+      prose-code:text-accent prose-code:bg-bg-tertiary prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+      prose-pre:bg-bg-tertiary prose-pre:border prose-pre:border-border prose-pre:rounded-lg
+      prose-li:text-fg-secondary
+      prose-blockquote:border-accent prose-blockquote:text-fg-secondary
+    ">
+      <Content />
     </div>
   </article>
 </BaseLayout>
-
-<style is:global>
-  .prose h1, .prose h2, .prose h3, .prose h4 {
-    color: var(--color-terminal-orange);
-  }
-  .prose p {
-    color: var(--color-terminal-green-dim);
-  }
-  .prose a {
-    color: var(--color-terminal-cyan);
-  }
-  .prose code {
-    color: var(--color-terminal-yellow);
-    background-color: var(--color-bg-tertiary);
-  }
-  .prose pre {
-    background-color: var(--color-bg-tertiary);
-    border: 1px solid var(--color-terminal-border);
-  }
-  .prose strong {
-    color: var(--color-terminal-green);
-  }
-  .prose ul, .prose ol {
-    color: var(--color-terminal-green-dim);
-  }
-  .prose blockquote {
-    border-left-color: var(--color-terminal-green);
-    color: var(--color-terminal-muted);
-  }
-</style>

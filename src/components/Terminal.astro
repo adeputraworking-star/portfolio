@@ -7,14 +7,14 @@ interface Props {
 const { title = 'terminal', class: className = '' } = Astro.props;
 ---
 
-<div class={`terminal-window ${className}`}>
-  <div class="terminal-header">
+<div class={`terminal-card ${className}`}>
+  <div class="terminal-card-header">
     <span class="terminal-dot terminal-dot-red"></span>
     <span class="terminal-dot terminal-dot-yellow"></span>
     <span class="terminal-dot terminal-dot-green"></span>
-    <span class="terminal-title">{title}</span>
+    <span class="terminal-card-title">{title}</span>
   </div>
-  <div class="terminal-body">
+  <div class="terminal-card-body">
     <slot />
   </div>
 </div>

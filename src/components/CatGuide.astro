@@ -1,0 +1,235 @@
+---
+// CatGuide — Hero-level cat mascot with scroll-driven narration + Web Speech API TTS
+// Renders as a fixed companion in the bottom-right with an expanding speech bubble.
+// Scroll-triggers are set up per-page via data-cat-section attributes on the page.
+---
+
+<!-- Cat Speech Bubble -->
+<div id="cat-bubble" class="fixed bottom-[130px] right-4 z-50 transition-all duration-300 origin-bottom-right opacity-0 scale-90 pointer-events-none" style="max-width: 320px; min-width: 260px;">
+  <div class="glass rounded-xl overflow-hidden shadow-2xl" style="box-shadow: 0 0 30px rgba(124,158,255,0.15), 0 8px 32px rgba(0,0,0,0.4);">
+    <div class="flex items-center gap-1.5 px-3 py-2 border-b border-white/5" style="background: rgba(255,255,255,0.03);">
+      <span class="w-2 h-2 rounded-full bg-dot-red"></span>
+      <span class="w-2 h-2 rounded-full bg-dot-yellow"></span>
+      <span class="w-2 h-2 rounded-full bg-dot-green"></span>
+      <span id="cat-bubble-title" class="flex-1 text-center text-[0.625rem] font-mono text-fg-muted">neko@guide:~$</span>
+    </div>
+    <div class="px-3.5 py-3 min-h-[50px]">
+      <span id="cat-bubble-text" class="text-[0.8125rem] text-fg-primary leading-relaxed"></span>
+      <span id="cat-cursor" class="animate-blink font-mono text-accent font-bold">_</span>
+    </div>
+  </div>
+  <!-- Arrow -->
+  <div class="absolute -bottom-1.5 right-8 w-3 h-3 rotate-45 glass border-r border-b border-white/8"></div>
+</div>
+
+<!-- Voice Toggle -->
+<button
+  id="cat-voice-btn"
+  class="fixed bottom-[130px] right-[calc(1rem+82px)] z-50 glass rounded-lg px-2.5 py-1.5 text-[0.625rem] font-mono text-fg-muted hover:text-accent transition-colors cursor-pointer"
+  title="Toggle cat voice"
+  aria-label="Toggle cat voice narration"
+>
+  🔊 <span id="cat-voice-status">OFF</span>
+</button>
+
+<!-- Cat Character -->
+<div id="cat-guide" class="fixed bottom-4 right-4 z-50 cursor-pointer transition-transform duration-300 hover:scale-105" style="filter: drop-shadow(0 0 20px rgba(124,158,255,0.2));">
+  <div class="animate-float">
+    <svg viewBox="0 0 180 200" width="80" height="90">
+      <defs>
+        <linearGradient id="cat-body-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#4a5160"/>
+          <stop offset="1" stop-color="#2d3240"/>
+        </linearGradient>
+        <linearGradient id="cat-hood-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#2d3240"/>
+          <stop offset="1" stop-color="#181b23"/>
+        </linearGradient>
+      </defs>
+      <!-- Hoodie -->
+      <path d="M30 130 Q30 90 90 85 Q150 90 150 130 L150 180 L30 180 Z" fill="url(#cat-hood-grad)"/>
+      <!-- Ears -->
+      <path d="M55 65 L50 30 L75 55 Z" fill="url(#cat-body-grad)"/>
+      <path d="M125 65 L130 30 L105 55 Z" fill="url(#cat-body-grad)"/>
+      <path d="M58 55 L56 42 L68 52 Z" fill="#e89a96" opacity="0.8"/>
+      <path d="M122 55 L124 42 L112 52 Z" fill="#e89a96" opacity="0.8"/>
+      <!-- Head -->
+      <ellipse cx="90" cy="85" rx="48" ry="42" fill="url(#cat-body-grad)"/>
+      <!-- Eyes -->
+      <ellipse cx="72" cy="82" rx="8" ry="10" fill="#0a0b10"/>
+      <ellipse cx="108" cy="82" rx="8" ry="10" fill="#0a0b10"/>
+      <circle cx="72" cy="80" r="5" fill="#7c9eff">
+        <animate attributeName="r" values="5;4;5" dur="3s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="108" cy="80" r="5" fill="#7c9eff">
+        <animate attributeName="r" values="5;4;5" dur="3s" repeatCount="indefinite" begin="0.5s"/>
+      </circle>
+      <circle cx="70" cy="78" r="1.5" fill="#fff"/>
+      <circle cx="106" cy="78" r="1.5" fill="#fff"/>
+      <!-- Nose + Mouth -->
+      <path d="M86 98 L94 98 L90 104 Z" fill="#e89a96"/>
+      <path d="M90 104 Q85 110 80 108 M90 104 Q95 110 100 108" stroke="#1a1d26" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Whiskers -->
+      <g stroke="#9aa0ac" stroke-width="0.8" opacity="0.5">
+        <path d="M45 95 L68 98 M45 102 L68 103"/>
+        <path d="M135 95 L112 98 M135 102 L112 103"/>
+      </g>
+      <!-- Laptop -->
+      <rect x="55" y="150" width="70" height="22" rx="3" fill="#181b23" stroke="#2d3240"/>
+      <rect x="60" y="154" width="60" height="14" rx="1" fill="#0a0b10"/>
+      <rect x="63" y="157" width="28" height="1.5" fill="#52d1a4" opacity="0.7"/>
+      <rect x="63" y="160" width="20" height="1.5" fill="#7c9eff" opacity="0.7"/>
+      <rect x="63" y="163" width="34" height="1.5" fill="#52d1a4" opacity="0.5"/>
+      <!-- Paws -->
+      <ellipse cx="45" cy="160" rx="10" ry="8" fill="url(#cat-body-grad)"/>
+      <ellipse cx="135" cy="160" rx="10" ry="8" fill="url(#cat-body-grad)"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+  // ── Cat narration lines per section ──
+  const catLines: Record<string, string> = {
+    'hero':       "hi! i'm neko 🐾 scroll down and i'll show you around!",
+    'highlights': "some cool stuff ade has done. the excel one is wild.",
+    'about':      "this is ade. self-taught, 5+ years, always shipping 💤",
+    'education':  "binus grad! not bad for a self-taught dev.",
+    'stats':      "numbers go brrr. five years across five industries.",
+    'skills':     "his skill tree is pretty deep. the bars don't lie.",
+    'projects':   "the real stuff — production systems, not just side projects ✨",
+    'experience': "career timeline. some of these gigs were intense.",
+    'blog':       "he writes sometimes. good reading while i nap on your keyboard.",
+    'contact':    "wanna reach out? he reads everything. i read half.",
+  };
+
+  const bubble = document.getElementById('cat-bubble');
+  const bubbleText = document.getElementById('cat-bubble-text');
+  const bubbleTitle = document.getElementById('cat-bubble-title');
+  const catCursor = document.getElementById('cat-cursor');
+  const catGuide = document.getElementById('cat-guide');
+  const voiceBtn = document.getElementById('cat-voice-btn');
+  const voiceStatus = document.getElementById('cat-voice-status');
+
+  let voiceOn = false;
+  let currentLine = '';
+  let typeTimer: ReturnType<typeof setInterval> | null = null;
+  let bubbleVisible = false;
+
+  // ── Show / hide bubble ──
+  function showBubble() {
+    if (!bubble) return;
+    bubble.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
+    bubble.classList.add('opacity-100', 'scale-100');
+    bubbleVisible = true;
+  }
+  function hideBubble() {
+    if (!bubble) return;
+    bubble.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
+    bubble.classList.remove('opacity-100', 'scale-100');
+    bubbleVisible = false;
+  }
+
+  // ── Typewriter ──
+  function typeText(text: string) {
+    if (typeTimer) clearInterval(typeTimer);
+    if (!bubbleText || !catCursor) return;
+    bubbleText.textContent = '';
+    catCursor.style.display = 'inline';
+    let i = 0;
+    typeTimer = setInterval(() => {
+      if (i < text.length) {
+        bubbleText.textContent = text.slice(0, ++i);
+      } else {
+        if (typeTimer) clearInterval(typeTimer);
+        catCursor.style.display = 'none';
+      }
+    }, 24);
+  }
+
+  // ── TTS ──
+  function speak(text: string) {
+    if (!voiceOn || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[🐾💤✨]/g, ''));
+    u.rate = 1.05;
+    u.pitch = 1.4;
+    u.volume = 0.85;
+    const voices = window.speechSynthesis.getVoices();
+    const pref = voices.find(v => /samantha|zira|google us/i.test(v.name)) || voices[0];
+    if (pref) u.voice = pref;
+    window.speechSynthesis.speak(u);
+  }
+
+  // ── Set line ──
+  function setLine(key: string) {
+    const text = catLines[key] || catLines['hero'];
+    if (text === currentLine) return;
+    currentLine = text;
+    showBubble();
+    typeText(text);
+    speak(text);
+  }
+
+  // ── Scroll observer ──
+  function initScrollObserver() {
+    const sections = document.querySelectorAll('[data-cat-section]');
+    if (sections.length === 0) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter(e => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible[0]) {
+        const key = (visible[0].target as HTMLElement).dataset.catSection || 'hero';
+        setLine(key);
+      }
+    }, {
+      rootMargin: '-20% 0px -20% 0px',
+      threshold: [0, 0.25, 0.5]
+    });
+
+    sections.forEach(el => observer.observe(el));
+  }
+
+  // ── Click cat to toggle ──
+  catGuide?.addEventListener('click', () => {
+    if (bubbleVisible) hideBubble();
+    else { showBubble(); typeText(currentLine || catLines['hero']); }
+  });
+
+  // ── Voice toggle ──
+  voiceBtn?.addEventListener('click', () => {
+    voiceOn = !voiceOn;
+    if (voiceStatus) voiceStatus.textContent = voiceOn ? 'ON' : 'OFF';
+    if (voiceBtn) voiceBtn.style.color = voiceOn ? '#52d1a4' : '';
+    if (voiceOn && currentLine) speak(currentLine);
+    else if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  });
+
+  // ── Init ──
+  document.addEventListener('DOMContentLoaded', () => {
+    // Load voices (Chrome loads them async)
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+    initScrollObserver();
+    // Show initial line after short delay
+    setTimeout(() => setLine('hero'), 800);
+  });
+
+  // Re-init on Astro page transitions
+  document.addEventListener('astro:page-load', () => {
+    initScrollObserver();
+    const pageName = window.location.pathname.replace(/^\/|\/$/g, '') || 'hero';
+    setLine(pageName);
+  });
+</script>
+
+<style>
+  @media (max-width: 768px) {
+    #cat-guide { transform: scale(0.85); transform-origin: bottom right; }
+    #cat-bubble { max-width: 260px; bottom: 110px !important; right: 0.5rem !important; }
+    #cat-voice-btn { display: none; }
+  }
+</style>

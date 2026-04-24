@@ -9,104 +9,85 @@ const projects = [
     description: 'Healthcare information system including SIMRS, HRIS, and Unit Cost modules with real-time chat and e-signature integration',
     tech: ['Node.js', 'NestJS', 'MongoDB', 'PostgreSQL', 'Socket.IO', 'Prisma'],
     type: 'Healthcare',
-    highlight: 'Digital e-Signature (TTE) integration'
+    highlight: 'Digital e-Signature (TTE) integration',
+    color: '#7c9eff'
   },
   {
     name: 'trading-system',
     description: 'Real-time trading system with live stock price dashboard processing millions of data points',
     tech: ['React JS', 'Node.js', 'WebSocket', 'Elasticsearch', 'Docker'],
     type: 'Fintech',
-    highlight: 'Real-time dashboard with WebSocket'
+    highlight: 'Real-time dashboard with WebSocket',
+    color: '#52d1a4'
   },
   {
     name: 'regulatory-reporting',
     description: 'Banking regulatory reporting system for ANTASENA, SLIK, SCV, and APOLO modules',
     tech: ['React JS', '.NET Core', 'SQL Server', 'Microservices'],
     type: 'Banking',
-    highlight: 'Excel import: 1hr → 2min'
+    highlight: 'Excel import: 1hr → 2min',
+    color: '#f472b6'
   },
   {
     name: 'video-conference',
     description: 'Web-based video conference and management system for educational purposes',
     tech: ['React JS', 'Node.js', 'BigBlueButton'],
     type: 'Education',
-    highlight: 'File management system'
+    highlight: 'File management system',
+    color: '#fbbf24'
   },
   {
     name: 'game-topup-monitor',
     description: 'Dashboard for monitoring and top-up services integrated with third-party game providers',
     tech: ['React JS', 'Node.js', 'PostgreSQL', 'Sequelize'],
     type: 'Gaming',
-    highlight: 'Third-party integration'
+    highlight: 'Third-party integration',
+    color: '#a78bfa'
   }
 ];
 ---
 
 <BaseLayout title="Projects" description="Portfolio of projects built by Ade Putra Susila">
-  <section class="py-8" data-tour-id="page-content">
-    <!-- Command Header -->
+  <section class="py-8" data-cat-section="projects">
     <div class="mb-8">
-      <p class="text-terminal-cyan mb-2">visitor@ade-portfolio:~$</p>
-      <h1 class="text-2xl md:text-3xl text-terminal-green glow-sm">ls -la projects/</h1>
+      <div class="section-label">03 · work</div>
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Selected <span class="gradient-text">projects.</span></h1>
     </div>
 
-    <!-- Directory Listing -->
-    <Terminal title="projects/" class="mb-8">
-      <p class="text-terminal-muted mb-4">total {projects.length} projects</p>
-      <div class="space-y-1 text-sm overflow-x-auto">
-        <p class="text-terminal-muted">drwxr-xr-x  ade  staff  ..</p>
-        {projects.map((project) => (
-          <p>
-            <span class="text-terminal-cyan">-rw-r--r--</span>
-            <span class="text-terminal-muted"> ade  staff </span>
-            <span class="text-terminal-green">{project.name}/</span>
-          </p>
-        ))}
-      </div>
-    </Terminal>
-
-    <!-- Project Cards -->
-    <div class="grid md:grid-cols-2 gap-6">
+    <div class="grid md:grid-cols-2 gap-4">
       {projects.map((project) => (
-        <div class="terminal-window hover:border-terminal-green transition-all">
-          <div class="terminal-header">
-            <span class="terminal-dot terminal-dot-red"></span>
-            <span class="terminal-dot terminal-dot-yellow"></span>
-            <span class="terminal-dot terminal-dot-green"></span>
-            <span class="terminal-title">cat {project.name}/README.md</span>
-          </div>
-          <div class="terminal-body">
-            <p class="text-terminal-orange text-lg mb-2"># {project.name}</p>
-            <p class="text-terminal-muted mb-1">## Type: {project.type}</p>
-            <p class="text-terminal-green-dim mb-4">{project.description}</p>
+        <div class="card relative overflow-hidden">
+          <!-- Top gradient line -->
+          <div class="absolute top-0 left-0 right-0 h-[1px]" style={`background: linear-gradient(90deg, transparent, ${project.color}, transparent)`}></div>
 
-            <p class="text-terminal-muted mb-2">## Tech Stack</p>
-            <div class="flex flex-wrap gap-2 mb-4">
+          <div class="p-5">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <span class="text-[0.625rem] font-mono font-semibold uppercase tracking-wider text-fg-muted">{project.type}</span>
+                <h3 class="font-mono text-base font-semibold mt-1" style={`color: ${project.color}`}>{project.name}</h3>
+              </div>
+            </div>
+
+            <p class="text-sm text-fg-secondary leading-relaxed mb-4">{project.description}</p>
+
+            <div class="flex flex-wrap gap-1.5 mb-4">
               {project.tech.map((t) => (
-                <span class="px-2 py-1 bg-bg-tertiary text-terminal-cyan text-xs rounded">
-                  {t}
-                </span>
+                <span class="tech-chip">{t}</span>
               ))}
             </div>
 
-            <p class="text-terminal-muted mb-1">## Highlight</p>
-            <p class="text-terminal-yellow">{project.highlight}</p>
+            <div class="pt-3 border-t border-border">
+              <span class="text-[0.625rem] font-mono text-fg-muted uppercase tracking-wider">Highlight</span>
+              <p class="text-sm text-amber mt-0.5">{project.highlight}</p>
+            </div>
           </div>
         </div>
       ))}
     </div>
 
-    <!-- Note -->
     <Terminal title="note.txt" class="mt-8">
-      <p class="text-terminal-muted">
-        # Note: These are professional projects built during employment.
-      </p>
-      <p class="text-terminal-muted">
-        # Source code is proprietary and cannot be shared publicly.
-      </p>
-      <p class="text-terminal-green mt-2">
-        # For personal/open-source projects, check my GitHub profile.
-      </p>
+      <p class="text-fg-muted font-mono text-xs">// professional projects — source code is proprietary</p>
+      <p class="text-teal font-mono text-xs mt-1">// for open-source work, check my GitHub profile</p>
     </Terminal>
   </section>
 </BaseLayout>

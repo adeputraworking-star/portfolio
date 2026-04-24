@@ -7,96 +7,76 @@ import profile from '../data/profile.json';
 
 <BaseLayout title="Home">
   <!-- Hero Section -->
-  <section class="min-h-[70vh] flex flex-col justify-center py-12">
-    <!-- ASCII Art Name -->
-    <pre class="ascii-art text-terminal-green text-xs sm:text-sm md:text-base glow-sm mb-8 overflow-x-auto" data-tour-id="ascii-art">
-{`
- █████╗ ██████╗ ███████╗
-██╔══██╗██╔══██╗██╔════╝
-███████║██║  ██║█████╗
-██╔══██║██║  ██║██╔══╝
-██║  ██║██████╔╝███████╗
-╚═╝  ╚═╝╚═════╝ ╚══════╝
-██████╗ ██╗   ██╗████████╗██████╗  █████╗
-██╔══██╗██║   ██║╚══██╔══╝██╔══██╗██╔══██╗
-██████╔╝██║   ██║   ██║   ██████╔╝███████║
-██╔═══╝ ██║   ██║   ██║   ██╔══██╗██╔══██║
-██║     ╚██████╔╝   ██║   ██║  ██║██║  ██║
-╚═╝      ╚═════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝
-███████╗██╗   ██╗███████╗██╗██╗      █████╗
-██╔════╝██║   ██║██╔════╝██║██║     ██╔══██╗
-███████╗██║   ██║███████╗██║██║     ███████║
-╚════██║██║   ██║╚════██║██║██║     ██╔══██║
-███████║╚██████╔╝███████║██║███████╗██║  ██║
-╚══════╝ ╚═════╝ ╚══════╝╚═╝╚══════╝╚═╝  ╚═╝
-`}
-    </pre>
-
-    <!-- Typing Introduction -->
-    <div data-tour-id="intro-terminal">
-    <Terminal title="intro.sh" class="mb-8">
-      <div class="space-y-2">
-        <p>
-          <span class="text-terminal-cyan">visitor@ade-portfolio:~$</span>
-          <span class="text-terminal-green"> whoami</span>
-        </p>
-        <p class="text-terminal-green-dim" id="typing-intro">
-          > {profile.title} with 5 years of experience
-        </p>
-        <p>
-          <span class="text-terminal-cyan">visitor@ade-portfolio:~$</span>
-          <span class="text-terminal-green"> cat location.txt</span>
-        </p>
-        <p class="text-terminal-muted">
-          > {profile.location}
-        </p>
-        <p>
-          <span class="text-terminal-cyan">visitor@ade-portfolio:~$</span>
-          <span class="text-terminal-green cursor-blink">_</span>
-        </p>
-      </div>
-    </Terminal>
+  <section class="min-h-[70vh] flex flex-col justify-center py-12" data-cat-section="hero">
+    <!-- Status badge -->
+    <div class="flex items-center gap-2 mb-6">
+      <span class="status-dot"></span>
+      <span class="text-[0.625rem] font-mono font-semibold tracking-widest uppercase text-accent">Available for work — 2026</span>
     </div>
 
-    <!-- Quick Navigation -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" data-tour-id="nav-cards">
-      <a href="/about" class="terminal-window hover:border-terminal-green transition-all group">
-        <div class="terminal-body text-center py-4">
-          <p class="text-terminal-cyan group-hover:glow-sm">cat</p>
-          <p class="text-terminal-green">about.txt</p>
-        </div>
-      </a>
-      <a href="/skills" class="terminal-window hover:border-terminal-green transition-all group">
-        <div class="terminal-body text-center py-4">
-          <p class="text-terminal-cyan group-hover:glow-sm">ls</p>
-          <p class="text-terminal-green">skills/</p>
-        </div>
-      </a>
-      <a href="/projects" class="terminal-window hover:border-terminal-green transition-all group">
-        <div class="terminal-body text-center py-4">
-          <p class="text-terminal-cyan group-hover:glow-sm">ls -la</p>
-          <p class="text-terminal-green">projects/</p>
-        </div>
-      </a>
-      <a href="/experience" class="terminal-window hover:border-terminal-green transition-all group">
-        <div class="terminal-body text-center py-4">
-          <p class="text-terminal-cyan group-hover:glow-sm">history</p>
-          <p class="text-terminal-green">--all</p>
-        </div>
-      </a>
+    <!-- Hero heading -->
+    <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tighter leading-[0.95] mb-5">
+      Fullstack engineer<br/>
+      <span class="gradient-text">building fast things.</span>
+    </h1>
+
+    <p class="text-base sm:text-lg text-fg-secondary max-w-xl leading-relaxed mb-8">
+      Self-taught, 5+ years shipping production software across fintech, healthcare, and banking. I care about performance, clean architecture, and code that doesn't embarrass its author.
+    </p>
+
+    <!-- CTA buttons -->
+    <div class="flex flex-wrap gap-3 mb-12">
+      <a href="/projects" class="btn-primary">View work →</a>
+      <a href="/contact" class="btn-secondary">Get in touch</a>
+    </div>
+
+    <!-- Code card -->
+    <div class="terminal-card max-w-md">
+      <div class="terminal-card-header">
+        <span class="terminal-dot terminal-dot-red"></span>
+        <span class="terminal-dot terminal-dot-yellow"></span>
+        <span class="terminal-dot terminal-dot-green"></span>
+        <span class="terminal-card-title">profile.ts</span>
+      </div>
+      <div class="terminal-card-body font-mono text-xs leading-7">
+        <div><span class="text-accent">export const</span> <span class="text-teal">ade</span> = {'{'}</div>
+        <div class="pl-4"><span class="text-pink">role</span>: <span class="text-teal">'fullstack'</span>,</div>
+        <div class="pl-4"><span class="text-pink">years</span>: <span class="text-amber">5</span>,</div>
+        <div class="pl-4"><span class="text-pink">location</span>: <span class="text-teal">'Tangerang, ID'</span>,</div>
+        <div class="pl-4"><span class="text-pink">status</span>: <span class="text-teal">'available'</span></div>
+        <div>{'}'}<span class="animate-blink text-accent font-bold">_</span></div>
+      </div>
     </div>
   </section>
 
-  <!-- Highlights Section -->
-  <section class="py-12">
-    <Terminal title="highlights.log">
-      <p class="text-terminal-muted mb-4"># Key Achievements</p>
-      {profile.highlights.map((highlight, i) => (
-        <p class="mb-2">
-          <span class="text-terminal-orange">[{String(i + 1).padStart(2, '0')}]</span>
-          <span class="text-terminal-green-dim"> {highlight}</span>
-        </p>
+  <!-- Highlights -->
+  <section class="py-12" data-cat-section="highlights">
+    <div class="section-label">◦ highlights</div>
+    <h2 class="text-2xl font-bold tracking-tight mb-6">Key achievements.</h2>
+    <div class="space-y-3">
+      {profile.highlights.map((highlight: string, i: number) => (
+        <div class="card p-4 flex gap-3 items-start">
+          <span class="font-mono text-sm font-bold gradient-text">{String(i + 1).padStart(2, '0')}</span>
+          <span class="text-sm text-fg-secondary leading-relaxed">{highlight}</span>
+        </div>
       ))}
-    </Terminal>
+    </div>
+  </section>
+
+  <!-- Quick Navigation -->
+  <section class="py-12">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {[
+        { href: '/about', label: 'About', cmd: 'cat' },
+        { href: '/skills', label: 'Skills', cmd: 'ls' },
+        { href: '/projects', label: 'Projects', cmd: 'ls -la' },
+        { href: '/experience', label: 'Timeline', cmd: 'history' },
+      ].map(({ href, label, cmd }) => (
+        <a href={href} class="card p-4 text-center group">
+          <div class="font-mono text-xs text-accent group-hover:text-teal transition-colors">{cmd}</div>
+          <div class="text-sm font-semibold mt-1">{label}</div>
+        </a>
+      ))}
+    </div>
   </section>
 </BaseLayout>

@@ -2,16 +2,23 @@
 interface Props {
   name: string;
   level: number;
+  category?: string;
 }
 
-const { name, level } = Astro.props;
-const filled = Math.round(level / 10);
-const empty = 10 - filled;
-const bar = '█'.repeat(filled) + '░'.repeat(empty);
+const { name, level, category } = Astro.props;
 ---
 
-<div class="flex items-center gap-4 font-mono text-sm">
-  <span class="w-32 text-terminal-cyan truncate">{name}</span>
-  <span class="text-terminal-green">[{bar}]</span>
-  <span class="text-terminal-muted w-12">{level}%</span>
+<div class="mb-3.5">
+  <div class="flex justify-between items-center mb-1.5">
+    <div class="flex items-center gap-2">
+      {category && (
+        <span class="text-[0.625rem] text-fg-muted font-mono uppercase tracking-wider">{category}</span>
+      )}
+      <span class="text-sm text-fg-primary">{name}</span>
+    </div>
+    <span class="text-xs font-mono text-accent tabular-nums">{level}%</span>
+  </div>
+  <div class="skill-bar-track">
+    <div class="skill-bar-fill" style={`width: ${level}%`}></div>
+  </div>
 </div>

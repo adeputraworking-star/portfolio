@@ -2,15 +2,14 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import MatrixRain from '../components/MatrixRain.astro';
-import OnboardingController from '../components/onboarding/OnboardingController.astro';
+import CatGuide from '../components/CatGuide.astro';
 
 interface Props {
   title: string;
   description?: string;
 }
 
-const { title, description = 'Fullstack Engineer with 5 years of experience building scalable web applications' } = Astro.props;
+const { title, description = 'Fullstack Engineer with 5+ years of experience building scalable web applications' } = Astro.props;
 const fullTitle = `${title} | Ade Putra Susila`;
 ---
 
@@ -22,48 +21,53 @@ const fullTitle = `${title} | Ade Putra Susila`;
     <meta name="description" content={description} />
     <meta name="author" content="Ade Putra Susila" />
     <meta name="keywords" content="Fullstack Engineer, React, Node.js, .NET Core, Web Developer, Indonesia" />
+    <meta name="theme-color" content="#0a0b10" />
 
     <!-- Open Graph -->
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
 
-    <!-- Fonts: preconnect + async load to avoid render-blocking -->
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
-      media="print"
-      onload="this.media='all'"
     />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
-      />
-    </noscript>
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <title>{fullTitle}</title>
   </head>
-  <body class="min-h-screen bg-bg-primary text-terminal-green relative">
-    <MatrixRain />
+  <body class="min-h-screen bg-bg-primary text-fg-primary relative overflow-x-hidden">
+    <!-- Ambient background orbs -->
+    <div class="ambient-orb ambient-orb-1" aria-hidden="true"></div>
+    <div class="ambient-orb ambient-orb-2" aria-hidden="true"></div>
+
     <div class="relative z-10">
       <Header />
-      <main class="container mx-auto px-4 py-8 max-w-5xl">
+      <main class="container mx-auto px-4 sm:px-6 py-8 max-w-5xl">
         <slot />
       </main>
       <Footer />
     </div>
-    <!-- Guided Tour System -->
-    <OnboardingController />
+
+    <!-- Cat Guide + Narration -->
+    <CatGuide />
+
+    <!-- Service Worker registration -->
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+    </script>
   </body>
 </html>

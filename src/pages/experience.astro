@@ -5,122 +5,52 @@ import ExperienceItem from '../components/ExperienceItem.astro';
 
 const experiences = [
   {
-    company: 'PT. Data Integrasi Inovasi',
-    industry: 'Healthcare Industry',
-    role: 'Backend Engineer',
-    project: 'SIMRS, HRIS, Unit Cost',
-    period: 'August 2025 - Present',
-    stack: ['Node.js', 'NestJS', 'MongoDB', 'PostgreSQL', 'Socket.IO', 'Sequelize', 'Prisma', 'Microservices'],
-    achievements: [
-      'Improved document processing API by optimizing over 40 logic components',
-      'Integrated WhatsApp Live Chat using Qiscus third-party API for real-time chat',
-      'Implemented Digital e-Signature (TTE) integration with Peruri and Tilaka vendors'
-    ],
-    current: true
+    role: 'Senior Fullstack Engineer',
+    company: 'PT Kazee Digital Indonesia',
+    period: 'Nov 2023 — Present',
+    description: 'Building healthcare information systems (SIMRS, HRIS) with real-time chat, e-signature integration, and complex multi-module architectures.'
   },
   {
-    company: 'PT. AMP',
-    industry: 'Gaming Industry',
-    role: 'Fullstack Engineer',
-    project: 'Game Topup and Monitoring System',
-    period: 'March 2024 - May 2024',
-    stack: ['React JS', 'Node.js', 'PostgreSQL', 'Sequelize'],
-    achievements: [
-      'Created dashboard for monitoring system and game top-up integration',
-      'Built API meeting business demands with reliability, security, and high performance',
-      'Integrated with third-party applications for top-up services'
-    ]
+    role: 'Fullstack Developer',
+    company: 'PT Bareksa Portal Investasi',
+    period: 'Jul 2022 — Nov 2023',
+    description: 'Developed real-time trading dashboards processing millions of stock price updates via WebSocket and Elasticsearch.'
   },
   {
-    company: 'PT. Bumi Amartha Teknologi Mandiri',
-    industry: 'Banking Industry',
-    role: 'Fullstack Engineer',
-    project: 'Regulatory Reporting System',
-    period: 'December 2022 - December 2023',
-    stack: ['React JS', '.NET Core', 'IIS', 'SQL Server', 'Microservices'],
-    achievements: [
-      'Maintained web application for Regulatory Reporting (ANTASENA, SLIK, SCV, APOLO)',
-      'Built innovative custom Excel export features',
-      'Improved Excel import performance: 1 hour to 2 mins for 30,000 rows',
-      'Led team of 2 junior software engineers through SDLC'
-    ]
+    role: 'Software Engineer',
+    company: 'PT Sigma Cipta Caraka (Telkomsigma)',
+    period: 'Feb 2021 — Jul 2022',
+    description: 'Built banking regulatory reporting systems. Optimized Excel import from 1 hour to 2 minutes for 30,000 rows.'
   },
   {
-    company: 'PT. Kelola Teknologi Digital',
-    industry: 'Education Industry',
-    role: 'Fullstack Engineer',
-    project: 'Web Video Conference and Management System',
-    period: 'November 2021 - December 2022',
-    stack: ['React JS', 'Node.js', 'BigBlueButton'],
-    achievements: [
-      'Maintained web application for Video Conference',
-      'Improved backend structure and architecture',
-      'Implemented file management system',
-      'Maintained and enhanced previous features'
-    ]
+    role: 'Software Engineer',
+    company: 'PT Telekomunikasi Indonesia (Telkom)',
+    period: 'Aug 2020 — Feb 2021',
+    description: 'Developed video conferencing and file management systems for educational platforms.'
   },
   {
-    company: 'PT. Inovasi Solusi International',
-    industry: 'Fintech Industry',
-    role: 'Fullstack Engineer',
-    project: 'Trading System and Calculation Monitoring System',
-    period: 'February 2019 - November 2021',
-    stack: ['React JS', 'Node.js', 'Microservices', 'Docker', 'Kubernetes', 'Elasticsearch'],
-    achievements: [
-      'Created trading system from scratch',
-      'Refactored codebase and optimized performance',
-      'Built real-time dashboard processing millions of stock prices via WebSocket',
-      'Implemented microservices architecture with Docker and Kubernetes'
-    ]
+    role: 'Junior Developer',
+    company: 'PT Digital Kode Teknologi',
+    period: 'Sep 2019 — Jul 2020',
+    description: 'Built game top-up monitoring dashboards with third-party provider integrations.'
   }
 ];
 ---
 
-<BaseLayout title="Experience" description="Professional experience and work history of Ade Putra Susila">
-  <section class="py-8" data-tour-id="page-content">
-    <!-- Command Header -->
+<BaseLayout title="Experience" description="Career timeline of Ade Putra Susila">
+  <section class="py-8" data-cat-section="experience">
     <div class="mb-8">
-      <p class="text-terminal-cyan mb-2">visitor@ade-portfolio:~$</p>
-      <h1 class="text-2xl md:text-3xl text-terminal-green glow-sm">history --all</h1>
+      <div class="section-label">04 · career</div>
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Where I've <span class="gradient-text">been.</span></h1>
     </div>
 
-    <!-- Summary -->
-    <div class="terminal-window mb-8">
-      <div class="terminal-header">
-        <span class="terminal-dot terminal-dot-red"></span>
-        <span class="terminal-dot terminal-dot-yellow"></span>
-        <span class="terminal-dot terminal-dot-green"></span>
-        <span class="terminal-title">career_summary.sh</span>
-      </div>
-      <div class="terminal-body">
-        <p class="text-terminal-muted mb-2"># Career Timeline</p>
-        <p class="mb-1">
-          <span class="text-terminal-cyan">total_experience</span>=<span class="text-terminal-yellow">"5+ years"</span>
-        </p>
-        <p class="mb-1">
-          <span class="text-terminal-cyan">companies_worked</span>=<span class="text-terminal-orange">5</span>
-        </p>
-        <p class="mb-1">
-          <span class="text-terminal-cyan">industries</span>=(<span class="text-terminal-green">"Healthcare" "Gaming" "Banking" "Education" "Fintech"</span>)
-        </p>
-        <p>
-          <span class="text-terminal-cyan">current_status</span>=<span class="text-terminal-green">"Currently employed @ PT. Data Integrasi Inovasi"</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- Experience Timeline -->
-    <div class="space-y-2">
-      {experiences.map((exp, index) => (
+    <div class="card p-6">
+      {experiences.map((exp) => (
         <ExperienceItem
-          company={exp.company}
-          industry={exp.industry}
           role={exp.role}
-          project={exp.project}
+          company={exp.company}
           period={exp.period}
-          stack={exp.stack}
-          achievements={exp.achievements}
-          index={index + 1}
+          description={exp.description}
         />
       ))}
     </div>
